@@ -1,0 +1,111 @@
+﻿
+> anita-doval-astrologer@0.0.0 build
+> vite build
+
+[36mrolldown-vite v7.2.5 [32mbuilding client environment for production...[36m[39m
+[2K
+transforming...Γ£ô 1750 modules transformed.
+rendering chunks...
+node.exe : [31mΓ£ù[39m 
+Build failed in 1.03s
+At line:1 char:1
++ & "C:\Program 
+Files\nodejs/node.exe" "C:\U
+sers\chira\AppData\Roaming\ 
+...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~
+    + CategoryInfo          
+    : NotSpecified: ([31m  
+  Γ£ù[39m Build failed i   
+ n 1.03s:String) [], Rem    
+oteException
+    + FullyQualifiedErrorId 
+    : NativeCommandError
+ 
+[31merror during build:
+[31mBuild failed with 1 
+error:
+
+[31m[MISSING_EXPORT] 
+Error:[0m "default" is not 
+exported by "src/pages/Servi
+ces/ServicesPage.jsx".
+    [38;5;246mΓò¡[0m[38;5
+;246mΓöÇ[0m[38;5;246m[[0m
+ src/App.jsx:10:8 
+[38;5;246m][0m
+    [38;5;246mΓöé[0m
+ [38;5;246m10 Γöé[0m [38;
+5;249mi[0m[38;5;249mm[0m
+[38;5;249mp[0m[38;5;249mo
+[0m[38;5;249mr[0m[38;5;24
+9mt[0m[38;5;249m 
+[0mServicesPage[38;5;249m 
+[0m[38;5;249mf[0m[38;5;2
+49mr[0m[38;5;249mo[0m[38
+;5;249mm[0m[38;5;249m [0m
+[38;5;249m"[0m[38;5;249m.
+[0m[38;5;249m/[0m[38;5;2
+49mp[0m[38;5;249ma[0m[38
+;5;249mg[0m[38;5;249me[0m
+[38;5;249ms[0m[38;5;249m/
+[0m[38;5;249mS[0m[38;5;2
+49me[0m[38;5;249mr[0m[38
+;5;249mv[0m[38;5;249mi[0m
+[38;5;249mc[0m[38;5;249me
+[0m[38;5;249ms[0m[38;5;2
+49m/[0m[38;5;249mS[0m[38
+;5;249me[0m[38;5;249mr[0m
+[38;5;249mv[0m[38;5;249mi
+[0m[38;5;249mc[0m[38;5;2
+49me[0m[38;5;249ms[0m[38
+;5;249mP[0m[38;5;249ma[0m
+[38;5;249mg[0m[38;5;249me
+[0m[38;5;249m"[0m[38;5;2
+49m;[0m
+ [38;5;240m   Γöé[0m      
+  ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓö¼ΓöÇΓö
+ÇΓöÇΓöÇΓöÇ  
+ [38;5;240m   Γöé[0m      
+        
+Γò░ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ 
+Missing export
+[38;5;246mΓöÇΓöÇΓöÇΓöÇΓò»[
+0m
+[31m
+    at aggregateBindingError
+sIntoJsError (file:///D:/ani
+ta-doval-astrologer/node_mod
+ules/rolldown/dist/shared/sr
+c-CYkh2Ybc.mjs:2659:18)
+    at unwrapBindingResult (
+file:///D:/anita-doval-astro
+loger/node_modules/rolldown/
+dist/shared/src-CYkh2Ybc.mjs
+:2634:128)
+    at #build (file:///D:/an
+ita-doval-astrologer/node_mo
+dules/rolldown/dist/shared/s
+rc-CYkh2Ybc.mjs:4433:34)
+    at async 
+buildEnvironment (file:///D:
+/anita-doval-astrologer/node
+_modules/vite/dist/node/chun
+ks/node.js:33468:64)
+    at async Object.build (f
+ile:///D:/anita-doval-astrol
+oger/node_modules/vite/dist/
+node/chunks/node.js:33871:19
+)
+    at async 
+Object.buildApp (file:///D:/
+anita-doval-astrologer/node_
+modules/vite/dist/node/chunk
+s/node.js:33868:153)
+    at async 
+CAC.<anonymous> (file:///D:/
+anita-doval-astrologer/node_
+modules/vite/dist/node/cli.j
+s:629:3)[39m
