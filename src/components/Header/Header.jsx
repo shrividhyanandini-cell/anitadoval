@@ -9,7 +9,7 @@ const NAV_LINKS = [
   { to: '/about', label: 'About Us' },
   { to: '/services', label: 'Services' },
   { to: '/blog', label: 'Blog' },
-  { to: '/contact', label: 'Contact Us' },
+  { to: '/connect', label: 'Connect' }
 ]
 
 const Header = () => {

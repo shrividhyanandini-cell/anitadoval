@@ -49,6 +49,7 @@ const ServicesManager = () => {
         link: '',
         sortOrder: 0,
         enabled: true,
+        status: 'draft',
         features: [''],
         duration: '',
         price: ''
@@ -60,10 +61,12 @@ const ServicesManager = () => {
     const icons = [
         { value: 'star', label: 'Star / Astrology', icon: Star },
         { value: 'home', label: 'Home / Vastu', icon: Home },
+        { value: 'house', label: 'House / Vastu', icon: Home },
         { value: 'hash', label: 'Hash / Numerology', icon: Hash },
         { value: 'hand', label: 'Hand / Palmistry', icon: Hand },
         { value: 'heart', label: 'Heart / Spiritual', icon: Heart },
-        { value: 'lotus', label: 'Lotus / Meditation', icon: Heart } // fallback icon for lotus
+        { value: 'lotus', label: 'Lotus / Meditation', icon: Heart },
+        { value: 'sparkles', label: 'Sparkles / Mantra', icon: Star }
     ]
 
     useEffect(() => {
@@ -157,7 +160,15 @@ const ServicesManager = () => {
 
         const serviceData = {
             ...formData,
+            detailedDescription: formData.description,
+            description: formData.description,
+            cardIcon: formData.icon,
+            icon: formData.icon,
+            image: formData.image,
+            imageUrl: formData.image,
+            imageAlt: formData.imageAlt || formData.title,
             features: filteredFeatures,
+            status: formData.status || 'draft',
             updatedAt: new Date(),
             slug: formData.title.toLowerCase().replace(/[^a-z0-9]+/g, '-')
         }
@@ -174,18 +185,27 @@ const ServicesManager = () => {
         resetForm()
     }
 
+    const handleToggleStatus = async (service) => {
+        const nextStatus = service.status === 'published' ? 'draft' : 'published'
+        await updateDocument(service.id, {
+            status: nextStatus,
+            updatedAt: new Date()
+        })
+    }
+
     const handleEdit = (service) => {
         setEditingService(service)
         setFormData({
             title: service.title || '',
             shortDescription: service.shortDescription || '',
-            description: service.description || '',
-            image: service.image || '',
-            imageAlt: service.imageAlt || '',
-            icon: service.icon || 'star',
+            description: service.detailedDescription || service.description || '',
+            image: (typeof service.image === 'object' ? service.image?.url : service.image) || service.imageUrl || '',
+            imageAlt: (typeof service.image === 'object' ? service.image?.alt : service.imageAlt) || service.title || '',
+            icon: service.cardIcon || service.icon || 'star',
             link: service.link || '',
             sortOrder: service.sortOrder || 0,
             enabled: service.enabled !== false,
+            status: service.status || 'draft',
             features: service.features?.length > 0 ? service.features : [''],
             duration: service.duration || '',
             price: service.price || ''
@@ -210,6 +230,7 @@ const ServicesManager = () => {
             link: '',
             sortOrder: servicesList.length + 1,
             enabled: true,
+            status: 'draft',
             features: [''],
             duration: '',
             price: ''
@@ -379,10 +400,23 @@ const ServicesManager = () => {
                                             </select>
                                         </div>
                                     </div>
-                                    <label className="flex items-center space-x-3 cursor-pointer py-2">
-                                        <input type="checkbox" checked={formData.enabled} onChange={e => setFormData({ ...formData, enabled: e.target.checked })} className="rounded border-gray-300 text-[#a67828] focus:ring-[#a67828] w-4 h-4" />
-                                        <span className="text-sm font-bold text-gray-700">Service Enabled (Visible on Frontend)</span>
-                                    </label>
+                                    <div className="grid grid-cols-2 gap-4 py-2">
+                                        <label className="flex items-center space-x-2 cursor-pointer">
+                                            <input type="checkbox" checked={formData.enabled} onChange={e => setFormData({ ...formData, enabled: e.target.checked })} className="rounded border-gray-300 text-[#a67828] focus:ring-[#a67828] w-4 h-4" />
+                                            <span className="text-sm font-bold text-gray-700">Enabled</span>
+                                        </label>
+                                        <div>
+                                            <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Publishing Status</label>
+                                            <select
+                                                value={formData.status}
+                                                onChange={e => setFormData({ ...formData, status: e.target.value })}
+                                                className={`w-full px-3 py-1.5 text-xs font-semibold rounded-lg border ${formData.status === 'published' ? 'bg-green-50 text-green-800 border-green-200' : 'bg-yellow-50 text-yellow-800 border-yellow-200'}`}
+                                            >
+                                                <option value="draft">Draft (Hidden)</option>
+                                                <option value="published">Published (Live)</option>
+                                            </select>
+                                        </div>
+                                    </div>
 
                                     {/* Additional detailed fields */}
                                     <div className="pt-4 border-t border-gray-200">
@@ -455,9 +489,18 @@ const ServicesManager = () => {
                                                 <button onClick={() => handleEdit(service)} className="p-1.5 text-blue-600 hover:bg-blue-50 rounded"><Edit className="w-4 h-4" /></button>
                                                 <button onClick={() => handleDelete(service.id)} className="p-1.5 text-red-600 hover:bg-red-50 rounded"><Trash2 className="w-4 h-4" /></button>
                                             </div>
-                                            {!service.enabled && (
-                                                <div className="absolute top-2 left-2 bg-black/70 text-white text-[14px] font-bold px-2 py-1 rounded uppercase tracking-wider">Hidden</div>
-                                            )}
+                                            <div className="absolute top-2 left-2 flex flex-wrap gap-1">
+                                                <button
+                                                    onClick={() => handleToggleStatus(service)}
+                                                    className={`text-[11px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider shadow cursor-pointer transition-colors ${service.status === 'published' ? 'bg-green-600 text-white hover:bg-green-700' : 'bg-amber-500 text-white hover:bg-amber-600'}`}
+                                                    title="Click to toggle Draft / Published"
+                                                >
+                                                    {service.status === 'published' ? 'Published' : 'Draft'}
+                                                </button>
+                                                {!service.enabled && (
+                                                    <span className="bg-black/70 text-white text-[11px] font-bold px-2 py-0.5 rounded uppercase tracking-wider">Hidden</span>
+                                                )}
+                                            </div>
                                         </div>
                                         <div className="p-4">
                                             <div className="flex items-center justify-between mb-1">

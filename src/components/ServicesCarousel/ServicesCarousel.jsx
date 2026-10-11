@@ -1,20 +1,19 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { doc, getDoc, collection, query, getDocs } from 'firebase/firestore'
 import { db } from '../../utils/firebase'
-import { Star, Home, Hash, Hand, Heart } from 'lucide-react'
-import AstroBackground from '../UI/AstroBackground'
+import { Star, Home, Hash, Hand, Heart, ChevronLeft, ChevronRight, Eye } from 'lucide-react'
 import SectionMotionOverlay from '../UI/SectionMotionOverlay'
 import { useResponsiveBackground } from '../../hooks/useResponsiveBackground'
+import ServiceDetailsModal from '../Services/ServiceDetailsModal'
 
-// Map saved icon strings to their Lucide components
 const iconMap = {
     star: Star,
     home: Home,
     hash: Hash,
     hand: Hand,
     heart: Heart,
-    lotus: Heart // Using heart for lotus fallback if needed
+    lotus: Heart
 }
 
 const DEFAULT_CONFIG = {
@@ -32,49 +31,59 @@ const DEFAULT_CONFIG = {
 
 const DEFAULT_SERVICES = [
     {
-        id: 's1',
-        title: 'Astrology',
+        id: 'astrology-consultation',
+        title: 'Astrology Consultation',
         shortDescription: 'Understanding your birth chart, planetary influences and life patterns through Vedic astrology.',
-        image: '',
+        detailedDescription: 'A comprehensive, deeply personalized reading of your Vedic birth chart (Janam Kundli). Discover planetary placements, Dasha cycles, career guidance, relationship compatibility, health indications, and practical remedial measures.',
+        image: '/images/post1.jpg',
         icon: 'star',
-        slug: 'astrology',
-        sortOrder: 1
+        slug: 'astrology-consultation',
+        sortOrder: 1,
+        features: ['Birth chart (Kundli) analysis', 'Dasha cycle evaluation', 'Career & financial guidance', 'Personalized remedial measures']
     },
     {
-        id: 's2',
+        id: 'vastu-consultation',
         title: 'Vastu Consultation',
         shortDescription: 'Scientific Vastu analysis for homes, offices, land and commercial properties to optimize energy flow.',
-        image: '',
+        detailedDescription: 'Detailed spatial and architectural energy assessment for residential and commercial spaces. Learn how directional orientations, natural elements (Panchamahabhutas), and entrance alignments shape health, peace, and financial prosperity.',
+        image: '/images/post4.jpg',
         icon: 'home',
         slug: 'vastu-consultation',
-        sortOrder: 2
+        sortOrder: 2,
+        features: ['Residential & commercial evaluation', 'Directional grid alignment', 'Non-demolition remedial remedies', 'Energy balancing techniques']
     },
     {
-        id: 's3',
-        title: 'Prashna Kundli',
-        shortDescription: 'Astrological guidance focused on a specific question or present circumstance, without requiring birth details.',
-        image: '',
+        id: 'numerology-consultation',
+        title: 'Numerology Consultation',
+        shortDescription: 'Explore the vibration of your birth date and name to uncover hidden potentials and auspicious timings.',
+        detailedDescription: 'Unlock the numerical resonance of your life path, destiny, and soul urge numbers. Receive actionable recommendations for name correction, favorable business naming, and identifying your most auspicious dates.',
+        image: '/images/post2.jpg',
         icon: 'hash',
-        slug: 'prashna-kundli',
-        sortOrder: 3
+        slug: 'numerology-consultation',
+        sortOrder: 3,
+        features: ['Life path & destiny number calculation', 'Name spelling correction & alignment', 'Auspicious dates & timing guidance', 'Personal year forecast']
     },
     {
-        id: 's4',
-        title: 'Mantra Vidhan',
-        shortDescription: 'Guidance on the correct practice and utilization of mantras for positive transformation and spiritual growth.',
-        image: '',
-        icon: 'heart',
-        slug: 'mantra-vidhan',
-        sortOrder: 4
+        id: 'palmistry-consultation',
+        title: 'Palmistry Consultation',
+        shortDescription: 'Traditional reading of palm lines, mounts, and hands to reveal personality traits and life trajectories.',
+        detailedDescription: 'Detailed palm reading examining the major lines (Heart, Head, Life, Fate), mounts of the planets, and subtle markings. Gain clarity on inherent strengths, subconscious patterns, and upcoming milestones.',
+        image: '/images/post5.jpg',
+        icon: 'hand',
+        slug: 'palmistry-consultation',
+        sortOrder: 4,
+        features: ['Primary lines & mounts evaluation', 'Career & life direction indicators', 'Health & emotional well-being signs', 'Remedial suggestions']
     },
     {
-        id: 's5',
-        title: 'Meditation Guidance',
-        shortDescription: 'Structured meditation practices and guidance for mental clarity, inner peace and spiritual development.',
-        image: '',
+        id: 'yoga-meditation',
+        title: 'Yog & Meditation',
+        shortDescription: 'Structured practices and yogic breathing techniques designed for mental stillness and inner equilibrium.',
+        detailedDescription: 'Holistic mind-body alignment incorporating authentic Pranayama, Chakra dhyana, and mindful meditation routines tailored to your constitutional temperament (Prakriti).',
+        image: '/images/post3.jpg',
         icon: 'lotus',
-        slug: 'meditation-guidance',
-        sortOrder: 5
+        slug: 'yoga-meditation',
+        sortOrder: 5,
+        features: ['Pranayama & breath control', 'Chakra & elemental meditation', 'Stress reduction & mental clarity', 'Daily spiritual routine blueprint']
     }
 ]
 
@@ -82,6 +91,8 @@ const ServicesCarousel = () => {
     const [config, setConfig] = useState(DEFAULT_CONFIG)
     const [services, setServices] = useState([])
     const [loading, setLoading] = useState(true)
+    const [activeServiceModal, setActiveServiceModal] = useState(null)
+    const carouselRef = useRef(null)
     const responsiveBgStyle = useResponsiveBackground(config.background)
 
     useEffect(() => {
@@ -101,11 +112,11 @@ const ServicesCarousel = () => {
                 const querySnapshot = await getDocs(q)
 
                 let fetchedServices = []
-                querySnapshot.forEach((doc) => {
-                    if (!doc.id.includes('_config')) {
-                        const data = doc.data()
-                        if (data.type !== 'guide' && data.enabled !== false) {
-                            fetchedServices.push({ id: doc.id, ...data })
+                querySnapshot.forEach((docSnap) => {
+                    if (!docSnap.id.includes('_config')) {
+                        const data = docSnap.data()
+                        if (data.type !== 'guide' && data.enabled !== false && data.status !== 'archived') {
+                            fetchedServices.push({ id: docSnap.id, ...data })
                         }
                     }
                 })
@@ -127,27 +138,20 @@ const ServicesCarousel = () => {
         fetchServicesData()
     }, [])
 
+    const scrollLeft = () => {
+        if (carouselRef.current) {
+            carouselRef.current.scrollBy({ left: -320, behavior: 'smooth' })
+        }
+    }
+
+    const scrollRight = () => {
+        if (carouselRef.current) {
+            carouselRef.current.scrollBy({ left: 320, behavior: 'smooth' })
+        }
+    }
+
     if (!config.sectionEnabled) {
         return null
-    }
-
-    const getOverlayStyle = (hasBackground) => {
-        if (!hasBackground) return {}
-        const opacities = {
-            'Light': 0,
-            'Medium': 0.3,
-            'Strong': 0.6
-        }
-        const opacity = opacities[config.bgOverlay] || 0
-        return {
-            background: `rgba(251,248,241, ${opacity})`
-        }
-    }
-
-    const bgPositionMap = {
-        'Top': 'top center',
-        'Center': 'center',
-        'Bottom': 'bottom center'
     }
 
     const sectionStyle = {
@@ -159,122 +163,133 @@ const ServicesCarousel = () => {
 
     return (
         <section
-            className="relative bg-[#FBF8F1] pt-[85px] md:pt-[100px] overflow-hidden"
+            className="relative bg-[#FAF9F5] py-[80px] md:py-[100px] overflow-hidden"
             style={sectionStyle}
         >
-
-            {/* Background Overlay */}
-            {hasBg && (
-                <div
-                    className="absolute inset-0 z-[0] pointer-events-none"
-                    style={getOverlayStyle(hasBg)}
-                ></div>
-            )}
-
-            {/* Decorative Celestial Element */}
             {config.celestialDecoration && (
-                <SectionMotionOverlay type="vastu-compass" intensity={0.1} />
+                <SectionMotionOverlay type="vastu-compass" intensity={0.08} />
             )}
 
-            <div className="relative z-10 w-full max-w-[1240px] px-[20px] md:px-[24px] lg:px-[20px] mx-auto">
+            <div className="relative z-10 w-full max-w-[1240px] px-4 md:px-8 mx-auto">
 
-                {/* Header block matching screenshot */}
-                <div className="flex flex-col md:flex-row md:items-start justify-between mb-[36px] md:mb-[50px] relative z-10">
+                {/* Section Header */}
+                <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 md:mb-12 gap-6 relative z-10">
                     <div className="max-w-[650px]">
-                        <p className="font-sans font-semibold text-[14px] md:text-[14px] tracking-[0.16em] uppercase text-[#A67828] mb-[16px]">
+                        <p className="font-sans font-semibold text-[13px] md:text-[14px] tracking-[0.2em] uppercase text-[var(--gold-600)] mb-3">
                             {config.eyebrow}
                         </p>
-                        <h2 className="font-serif font-medium text-[36px] md:text-[44px] lg:text-[48px] leading-[1.05] text-[#25221E] mb-[18px]">
+                        <h2 className="font-serif font-medium text-[34px] md:text-[44px] leading-[1.1] text-[var(--charcoal-900)] mb-3">
                             {config.heading.replace(config.highlightedHeading, '')}
-                            <span className="text-[#B78325]">{config.highlightedHeading}</span>
+                            <span className="text-[var(--gold-600)]">{config.highlightedHeading}</span>
                         </h2>
-                        <p className="font-sans text-[14px] md:text-[15px] leading-[1.65] md:leading-[1.55] text-[#625B52]">
+                        <p className="font-sans text-[15px] leading-relaxed text-[var(--charcoal-600)]">
                             {config.description}
                         </p>
                     </div>
 
-                    {config.viewAllCta?.enabled && (
-                        <div className="mt-[24px] md:mt-[38px] shrink-0">
+                    <div className="flex items-center gap-3 shrink-0">
+                        {/* Carousel Scroll Buttons */}
+                        <button
+                            onClick={scrollLeft}
+                            aria-label="Scroll left"
+                            className="w-10 h-10 rounded-full border border-[var(--border-warm)] bg-white hover:bg-[var(--gold-50)] hover:border-[var(--gold-400)] text-[var(--charcoal-700)] flex items-center justify-center transition-colors shadow-xs"
+                        >
+                            <ChevronLeft size={18} />
+                        </button>
+                        <button
+                            onClick={scrollRight}
+                            aria-label="Scroll right"
+                            className="w-10 h-10 rounded-full border border-[var(--border-warm)] bg-white hover:bg-[var(--gold-50)] hover:border-[var(--gold-400)] text-[var(--charcoal-700)] flex items-center justify-center transition-colors shadow-xs"
+                        >
+                            <ChevronRight size={18} />
+                        </button>
+
+                        {config.viewAllCta?.enabled && (
                             <Link
                                 to={config.viewAllCta.url || '/services'}
-                                className="inline-flex items-center justify-center h-[44px] px-[18px] border border-[#CDBB9F] rounded-[6px] text-[14px] md:text-[14px] font-sans font-semibold text-[#302C27] hover:bg-[#B78325] hover:text-white hover:border-[#B78325] transition-colors duration-[250ms] bg-transparent"
+                                className="inline-flex items-center justify-center h-10 px-5 border border-[var(--gold-300)] rounded-lg text-[14px] font-sans font-semibold text-[var(--charcoal-800)] hover:bg-[var(--gold-500)] hover:text-white hover:border-[var(--gold-500)] transition-colors ml-2 bg-white shadow-xs"
                             >
                                 {config.viewAllCta.text} &rarr;
                             </Link>
-                        </div>
-                    )}
+                        )}
+                    </div>
                 </div>
 
-                {/* Services Grid matching screenshot */}
-                <div className="flex overflow-x-auto lg:grid lg:grid-cols-4 hide-scrollbar gap-[16px] lg:gap-[18px] pb-6 lg:pb-0 snap-x snap-mandatory">
+                {/* Services Carousel */}
+                <div
+                    ref={carouselRef}
+                    className="flex overflow-x-auto hide-scrollbar gap-5 md:gap-6 pb-6 snap-x snap-mandatory scroll-smooth"
+                >
                     {loading ? (
-                        <div className="col-span-5 py-8 text-center"><p className="text-sm text-gray-500">Loading services...</p></div>
+                        <div className="w-full py-16 text-center text-stone-500">Loading services...</div>
                     ) : (
                         services.map((service, index) => {
-                            const IconElement = iconMap[service.icon] || Star;
-
-                            // Title handling specific to screenshot
-                            const titleStr = service.title || ''
-                            const splitTitle = titleStr.split(' ');
-                            const formattedTitle = splitTitle.length === 2 && titleStr.length < 22
-                                ? <>{splitTitle[0]}<br />{splitTitle[1]}</>
-                                : titleStr;
+                            const IconElement = iconMap[service.icon] || Star
+                            const imageUrl = service.image || service.imageUrl || `/images/post${(index % 7) + 1}.jpg`
 
                             return (
-                                <Link
-                                    to={service.link || `/services/${service.slug}`}
+                                <div
                                     key={service.id || index}
-                                    className="group flex flex-col relative w-[280px] sm:w-[260px] md:w-[310px] lg:w-auto h-[380px] md:h-[390px] lg:h-[400px] bg-[#FFFDF8] border border-[#E7DDCE] rounded-[10px] shadow-[0_8px_25px_rgba(50,40,25,0.06)] shrink-0 snap-start transition-all duration-300 hover:-translate-y-[5px]"
+                                    className="group flex flex-col relative w-[285px] sm:w-[305px] md:w-[325px] bg-white border border-[var(--border-warm)] rounded-2xl shadow-[0_4px_20px_rgba(50,40,25,0.05)] shrink-0 snap-start transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_12px_32px_rgba(50,40,25,0.1)] overflow-hidden"
                                 >
-                                    {/* Image Top Half Container */}
-                                    <div className="relative w-full h-[180px] md:h-[190px] shrink-0">
-                                        <div className="w-full h-full rounded-t-[10px] overflow-hidden bg-gray-100">
-                                            {/* Gracefully handle empty images */}
-                                            {service.image ? (
-                                                <img
-                                                    src={service.image}
-                                                    alt={service.imageAlt || service.title}
-                                                    loading="lazy"
-                                                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
-                                                />
-                                            ) : (
-                                                <div className="w-full h-full bg-gradient-to-br from-[#E7DDCE] to-[#CDBB9F] opacity-30"></div>
-                                            )}
-                                        </div>
+                                    {/* Image Top */}
+                                    <div className="relative w-full h-[180px] bg-stone-100 overflow-hidden">
+                                        <img
+                                            src={imageUrl}
+                                            alt={service.title}
+                                            loading="lazy"
+                                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                                        />
+                                        <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
 
-                                        {/* Overlapping Icon */}
-                                        <div className="absolute -bottom-[28px] left-1/2 transform -translate-x-1/2 w-[56px] h-[56px] bg-[#FFFDF8] rounded-full flex items-center justify-center border border-[#CDA55D] shadow-[0_5px_15px_rgba(50,40,25,0.08)] z-10 text-[#B78325] group-hover:text-[#8C641C] transition-colors">
-                                            <IconElement strokeWidth={1.5} className="w-[26px] h-[26px]" />
+                                        {/* Floating Badge */}
+                                        <div className="absolute bottom-3 left-3 w-10 h-10 bg-white/95 backdrop-blur-md rounded-full flex items-center justify-center border border-[var(--gold-200)] text-[var(--gold-600)] shadow-sm">
+                                            <IconElement strokeWidth={1.6} size={20} />
                                         </div>
                                     </div>
 
-                                    {/* Content Bottom Half */}
-                                    <div className="flex-1 flex flex-col p-[18px] pt-[42px] items-center text-center">
-                                        <h5 className="font-serif font-medium text-[20px] md:text-[20px] text-[#25221E] mb-[12px] leading-[1.1] min-h-[52px] flex items-center space-x-0 justify-center">
-                                            <span className="block text-center w-full">{formattedTitle}</span>
-                                        </h5>
+                                    {/* Content */}
+                                    <div className="flex-1 flex flex-col p-5">
+                                        <h3 className="font-serif font-semibold text-[20px] text-[var(--charcoal-900)] mb-2 group-hover:text-[var(--gold-600)] transition-colors line-clamp-1">
+                                            {service.title}
+                                        </h3>
 
-                                        <p className="font-sans text-[14px] leading-[1.5] text-[#6E665D] line-clamp-2 lg:line-clamp-2 max-w-[200px] mb-[16px]">
-                                            {service.shortDescription}
+                                        <p className="font-sans text-[13.5px] leading-relaxed text-[var(--charcoal-600)] line-clamp-2 mb-4 flex-1">
+                                            {service.shortDescription || service.description}
                                         </p>
 
-                                        {/* Spacer to push CTA to bottom */}
-                                        <div className="flex-1"></div>
+                                        {/* Action buttons */}
+                                        <div className="pt-3 border-t border-[var(--border-warm)] flex items-center justify-between gap-2 mt-auto">
+                                            <button
+                                                onClick={() => setActiveServiceModal(service)}
+                                                className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-[var(--charcoal-700)] hover:text-[var(--gold-600)] py-1.5 transition-colors"
+                                            >
+                                                <Eye size={15} />
+                                                <span>View Details</span>
+                                            </button>
 
-                                        <div className="flex flex-col items-center justify-center w-full mt-auto">
-                                            <div className="w-[50px] h-[1px] bg-[#CDA55D] opacity-60 mb-[12px]"></div>
-                                            <div className="font-sans text-[14px] font-semibold text-[#B78325] flex items-center group-hover:text-[#8C641C] transition-colors">
-                                                Explore &rarr;
-                                            </div>
+                                            <button
+                                                onClick={() => setActiveServiceModal(service)}
+                                                className="btn btn-primary text-[12px] h-8 px-3.5 rounded-md"
+                                            >
+                                                Consult &rarr;
+                                            </button>
                                         </div>
                                     </div>
-                                </Link>
+                                </div>
                             )
                         })
                     )}
                 </div>
 
             </div>
+
+            {/* Service Details Popup Modal */}
+            <ServiceDetailsModal
+                service={activeServiceModal}
+                isOpen={!!activeServiceModal}
+                onClose={() => setActiveServiceModal(null)}
+            />
         </section>
     )
 }

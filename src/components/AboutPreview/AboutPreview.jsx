@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react'
 import SectionMotionOverlay from '../UI/SectionMotionOverlay'
 import { Link } from 'react-router-dom'
+import { ArrowRight } from 'lucide-react'
+import { usePopup } from '../../context/PopupContext'
 import { doc, getDoc } from 'firebase/firestore'
 import { db } from '../../utils/firebase'
 import { useResponsiveBackground } from '../../hooks/useResponsiveBackground'
@@ -53,7 +55,7 @@ const DEFAULT_CONFIG = {
     ],
     cta: {
         enabled: true,
-        text: 'Discover Her Journey',
+        text: 'Book a Consultation',
         url: '/about'
     },
     quote: {
@@ -74,18 +76,23 @@ const QuoteDecoration = () => (
 )
 
 const AboutPreview = () => {
+    const { openPopup } = usePopup()
     const [config, setConfig] = useState(DEFAULT_CONFIG)
     const responsiveBgStyle = useResponsiveBackground(config.background)
 
     useEffect(() => {
         const fetchConfig = async () => {
             try {
-                // If the user hooks this up to admin panel, we fetch from a document
-                const docRef = doc(db, 'services', 'about_config')
-                const docSnap = await getDoc(docRef)
-                if (docSnap.exists()) {
-                    // merge cautiously to not break structure
-                    setConfig(prev => ({ ...prev, ...docSnap.data() }))
+                // Fetch from about_section first, then fallback to legacy services/about_config
+                let snap = await getDoc(doc(db, 'about_section', 'about_config'))
+                if (!snap.exists()) {
+                    snap = await getDoc(doc(db, 'about_section', 'profile'))
+                }
+                if (!snap.exists()) {
+                    snap = await getDoc(doc(db, 'services', 'about_config'))
+                }
+                if (snap.exists()) {
+                    setConfig(prev => ({ ...prev, ...snap.data() }))
                 }
             } catch (err) {
                 // Silently fallback to DEFAULT_CONFIG
@@ -105,10 +112,11 @@ const AboutPreview = () => {
     }
 
     if (config.sectionEnabled === false) {
-        return null;
+        return null
     }
+
     if (!config.heading && !config.description) {
-        return null;
+        return null
     }
 
     const hasLocalBg = !!responsiveBgStyle.backgroundImage
@@ -204,13 +212,14 @@ const AboutPreview = () => {
 
                         {config.cta?.enabled && (
                             <div>
-                                <Link
-                                    to={config.cta?.url || '#'}
-                                    className="inline-flex items-center justify-center gap-[10px] bg-[#a67828] hover:bg-[#8C641C] text-white h-[52px] md:h-[56px] px-[32px] rounded-[6px] font-sans text-[14px] md:text-[15px] font-semibold transition-colors duration-[250ms] w-full md:w-auto shadow-[0_8px_20px_rgba(166,120,40,0.2)]"
+                                <button
+                                    type="button"
+                                    onClick={() => openPopup()}
+                                    className="btn btn-primary"
                                 >
-                                    {config.cta?.text}
-                                    <span className="text-[18px] leading-none mb-[2px]">&rarr;</span>
-                                </Link>
+                                    {config.cta?.text && config.cta.text !== 'Discover Her Journey' ? config.cta.text : 'Book a Consultation'}
+                                    <ArrowRight size={14} strokeWidth={2.5} />
+                                </button>
                             </div>
                         )}
                     </div>

@@ -10,6 +10,7 @@ import Home from './pages/Home/Home'
 import About from './pages/About/About'
 import ServicesPage from './pages/Services/ServicesPage'
 import BlogPage from './pages/Blog/BlogPage'
+import BlogDetailPage from './pages/Blog/BlogDetailPage'
 import Contact from './pages/Contact/Contact'
 import AdminPage from './pages/Admin/AdminPage'
 import DigitalBrochure from './pages/Brochures/DigitalBrochure'
@@ -30,6 +31,7 @@ function AppContent() {
           <Route path="/about" element={<About />} />
           <Route path="/services" element={<ServicesPage />} />
           <Route path="/blog" element={<BlogPage />} />
+          <Route path="/blog/:slug" element={<BlogDetailPage />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/connect" element={<ConnectPage />} />
           <Route path="/brochure/:type" element={<DigitalBrochure />} />

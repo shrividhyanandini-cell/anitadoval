@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { doc, getDoc } from 'firebase/firestore'
+import { doc, getDoc, collection, getDocs } from 'firebase/firestore'
 import { db } from '../../utils/firebase'
 import { Plus, Minus } from 'lucide-react'
 import { Link } from 'react-router-dom'
@@ -12,33 +12,64 @@ const DEFAULT_CONFIG = {
     heading: 'Frequently \nAsked Questions',
     description: 'Find answers to common questions about our consultations, services and process.',
     buttonText: 'Contact Us',
-    buttonUrl: '/contact',
-    faqs: [
-        { id: 'faq-1', question: 'What can I expect in a consultation?', answer: 'Our consultations provide deep insights into your current life path...' }
-    ]
+    buttonUrl: '/contact'
 }
 
 const FAQSection = () => {
-    const [openId, setOpenId] = useState('faq-0')
+    const [openId, setOpenId] = useState(null)
     const { sectionStyle, textClass, overlayElement } = useTheme('faq')
     const [config, setConfig] = useState(DEFAULT_CONFIG)
+    const [faqs, setFaqs] = useState([])
+    const [loading, setLoading] = useState(true)
 
     useEffect(() => {
-        const fetchConfig = async () => {
+        const fetchFaqsData = async () => {
             try {
-                const docRef = doc(db, 'services', 'faq_config')
-                const snap = await getDoc(docRef)
-                if (snap.exists()) {
-                    setConfig({ ...DEFAULT_CONFIG, ...snap.data() })
+                // 1. Fetch section config
+                let loadedConfig = { ...DEFAULT_CONFIG }
+                const confSnap = await getDoc(doc(db, 'faqs', 'faq_config'))
+                if (confSnap.exists()) {
+                    loadedConfig = { ...DEFAULT_CONFIG, ...confSnap.data() }
+                } else {
+                    const legacySnap = await getDoc(doc(db, 'services', 'faq_config'))
+                    if (legacySnap.exists()) {
+                        loadedConfig = { ...DEFAULT_CONFIG, ...legacySnap.data() }
+                    }
+                }
+                setConfig(loadedConfig)
+
+                // 2. Fetch FAQs from 'faqs' collection
+                const querySnap = await getDocs(collection(db, 'faqs'))
+                let publishedFaqs = []
+
+                querySnap.forEach((docSnap) => {
+                    if (!docSnap.id.includes('_config')) {
+                        const data = docSnap.data()
+                        // Strictly only show records where enabled !== false and status === 'published'
+                        if (data.enabled !== false && data.status === 'published') {
+                            publishedFaqs.push({ id: docSnap.id, ...data })
+                        }
+                    }
+                })
+
+                publishedFaqs.sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0))
+                setFaqs(publishedFaqs)
+                if (publishedFaqs.length > 0) {
+                    setOpenId(publishedFaqs[0].id)
                 }
             } catch (err) {
-                // keep defaults
+                console.error("Error loading FAQs from Firestore:", err)
+            } finally {
+                setLoading(false)
             }
         }
-        fetchConfig()
+
+        fetchFaqsData()
     }, [])
 
-    if (config.sectionEnabled === false) return null;
+    if (config.sectionEnabled === false || (!loading && faqs.length === 0)) {
+        return null
+    }
 
     const headingLines = config.heading?.split('\\n').map(l => l.trim()).filter(Boolean) || []
 
@@ -69,13 +100,13 @@ const FAQSection = () => {
                     {/* Right: Accordion */}
                     <div className="md:col-span-7">
                         <div className={`border-t ${textClass.includes('white') ? 'border-white/20' : 'border-[#DED3C4]'}`}>
-                            {config.faqs.map((faq) => {
+                            {faqs.map((faq) => {
                                 const isOpen = openId === faq.id
                                 return (
                                     <div key={faq.id} className={`border-b ${textClass.includes('white') ? 'border-white/20' : 'border-[#DED3C4]'}`}>
                                         <button
                                             onClick={() => setOpenId(isOpen ? null : faq.id)}
-                                            className="w-full flex items-center justify-between text-left min-h-[52px] py-[16px] group"
+                                            className="w-full flex items-center justify-between text-left min-h-[52px] py-[16px] group cursor-pointer"
                                         >
                                             <span className={`font-medium text-[14px] md:text-[15px] pr-8 transition-colors flex-1 ${isOpen ? 'text-[var(--gold-500)]' : textClass.includes('white') ? 'text-gray-100 group-hover:text-white' : 'text-[var(--charcoal-800)] group-hover:text-[var(--gold-400)]'}`}>
                                                 {faq.question}
@@ -87,7 +118,7 @@ const FAQSection = () => {
 
                                         <div
                                             className="overflow-hidden transition-all duration-300 ease-premium"
-                                            style={{ maxHeight: isOpen ? '300px' : '0px', opacity: isOpen ? 1 : 0 }}
+                                            style={{ maxHeight: isOpen ? '400px' : '0px', opacity: isOpen ? 1 : 0 }}
                                         >
                                             <p className={`text-[14px] pb-[20px] leading-relaxed ${textClass.includes('white') ? 'text-gray-300' : 'text-[var(--charcoal-600)]'}`}>
                                                 {faq.answer}

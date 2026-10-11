@@ -36,6 +36,10 @@ service cloud.firestore {
     }
 
     // About Section
+    match /about_section/{document=**} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
     match /about/{document=**} {
       allow read: if true;
       allow write: if isAdmin();
@@ -53,6 +57,12 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
     
+    // FAQs Collection
+    match /faqs/{document=**} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
     // Testimonials Collection
     match /testimonials/{document=**} {
       allow read: if true;

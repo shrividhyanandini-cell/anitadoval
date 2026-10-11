@@ -7,6 +7,7 @@ import Philosophy from '../../components/Philosophy/Philosophy'
 import ServicesCarousel from '../../components/ServicesCarousel/ServicesCarousel'
 import ConsultationProcess from '../../components/ConsultationProcess/ConsultationProcess'
 import DigitalBrochures from '../../components/DigitalBrochures/DigitalBrochures'
+import VideoLibrarySection from '../../components/VideoLibrary/VideoLibrarySection'
 import BlogPreview from '../../components/BlogPreview/BlogPreview'
 import FAQSection from '../../components/FAQ/FAQSection'
 import CTASection from '../../components/CTASection/CTASection'
@@ -15,11 +16,12 @@ const Home = () => {
   return (
     <>
       <Hero />
-      <Philosophy />
       <AboutPreview />
+      <Philosophy />
       <ServicesCarousel />
       <ConsultationProcess />
       <DigitalBrochures />
+      <VideoLibrarySection />
       <BlogPreview />
       <FAQSection />
       <CTASection />

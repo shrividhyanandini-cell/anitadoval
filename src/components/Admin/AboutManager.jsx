@@ -31,8 +31,8 @@ const DEFAULT_CONFIG = {
     },
     cta: {
         enabled: true,
-        text: 'Discover Her Journey',
-        url: '/about'
+        text: 'Book a Consultation',
+        url: ''
     },
     quote: {
         enabled: true,
@@ -48,15 +48,20 @@ const AboutManager = () => {
     const [uploadingPortrait, setUploadingPortrait] = useState(false)
     const [uploadingBg, setUploadingBg] = useState(false)
     const [statusMessage, setStatusMessage] = useState(null)
-    const [config, setConfig] = useState(DEFAULT_CONFIG)
+    const [config, setConfig] = useState({ ...DEFAULT_CONFIG, status: 'published' })
 
     useEffect(() => {
         const fetchConfig = async () => {
             try {
-                const docRef = doc(db, 'services', 'about_config')
-                const docSnap = await getDoc(docRef)
-                if (docSnap.exists()) {
-                    setConfig({ ...DEFAULT_CONFIG, ...docSnap.data() })
+                let snap = await getDoc(doc(db, 'about_section', 'about_config'))
+                if (!snap.exists()) {
+                    snap = await getDoc(doc(db, 'about_section', 'profile'))
+                }
+                if (!snap.exists()) {
+                    snap = await getDoc(doc(db, 'services', 'about_config'))
+                }
+                if (snap.exists()) {
+                    setConfig({ ...DEFAULT_CONFIG, ...snap.data() })
                 }
             } catch (err) {
                 console.error("Failed to load about config", err)
@@ -119,7 +124,13 @@ const AboutManager = () => {
         setSaving(true)
         setStatusMessage(null)
         try {
-            await setDoc(doc(db, 'services', 'about_config'), config)
+            // Save to primary about_section collection
+            await setDoc(doc(db, 'about_section', 'about_config'), config)
+            // Sync to legacy services collection for backwards compatibility
+            try {
+                await setDoc(doc(db, 'services', 'about_config'), config)
+            } catch (e) { }
+
             setStatusMessage({ type: 'success', text: 'About settings saved successfully!' })
             setTimeout(() => setStatusMessage(null), 4000)
         } catch (err) {
@@ -144,11 +155,19 @@ const AboutManager = () => {
             <div className="flex items-center justify-between bg-white rounded-2xl shadow-sm p-6 border border-gray-100">
                 <div>
                     <h2 className="text-2xl font-bold text-gray-800">About Section</h2>
-                    <p className="text-gray-500 text-sm mt-1">Manage the About section on the homepage</p>
+                    <p className="text-gray-500 text-sm mt-1">Manage the About section on the homepage (Firestore: about_section)</p>
                 </div>
                 <div className="flex items-center gap-4">
+                    <select
+                        value={config.status || 'published'}
+                        onChange={(e) => handleChange('status', e.target.value)}
+                        className={`text-xs font-bold uppercase tracking-wider px-3 py-2 rounded-lg border cursor-pointer ${config.status === 'published' ? 'bg-green-50 text-green-800 border-green-200' : 'bg-amber-50 text-amber-800 border-amber-200'}`}
+                    >
+                        <option value="draft">Draft (Hidden)</option>
+                        <option value="published">Published (Live)</option>
+                    </select>
                     <label className="flex items-center gap-2 cursor-pointer bg-gray-50 px-4 py-2 rounded-lg border border-gray-200">
-                        <span className="text-sm font-medium text-gray-700">Enable Section on Website</span>
+                        <span className="text-sm font-medium text-gray-700">Enable Section</span>
                         <input type="checkbox" checked={config.sectionEnabled !== false} onChange={(e) => handleChange('sectionEnabled', e.target.checked)} className="rounded text-blue-600 focus:ring-blue-500 w-4 h-4" />
                     </label>
                     <Button onClick={saveChanges} disabled={saving} className="flex items-center gap-2 text-white bg-[#a67828] hover:bg-[#8C641C]">
@@ -207,17 +226,13 @@ const AboutManager = () => {
                     <div className="bg-white rounded-2xl shadow-sm p-6 border border-gray-100 grid grid-cols-2 gap-6">
                         <div>
                             <div className="flex justify-between items-center border-b border-gray-100 pb-2 mb-4">
-                                <h3 className="font-semibold text-lg">CTA Button</h3>
+                                <h3 className="font-semibold text-lg">CTA Button (Pop-up)</h3>
                                 <input type="checkbox" checked={config.cta.enabled} onChange={(e) => handleChange('cta.enabled', e.target.checked)} className="rounded" />
                             </div>
                             <div className="space-y-3">
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-500 mb-1">Text</label>
-                                    <input type="text" value={config.cta.text} onChange={(e) => handleChange('cta.text', e.target.value)} className="w-full p-2 border border-gray-300 rounded text-sm" disabled={!config.cta.enabled} />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-500 mb-1">URL (e.g. /about)</label>
-                                    <input type="text" value={config.cta.url} onChange={(e) => handleChange('cta.url', e.target.value)} className="w-full p-2 border border-gray-300 rounded text-sm font-mono" disabled={!config.cta.enabled} />
+                                    <label className="block text-sm font-medium text-gray-500 mb-1">Button Text</label>
+                                    <input type="text" value={config.cta.text} onChange={(e) => handleChange('cta.text', e.target.value)} className="w-full p-2 border border-gray-300 rounded text-sm" disabled={!config.cta.enabled} placeholder="Book a Consultation" />
                                 </div>
                             </div>
                         </div>

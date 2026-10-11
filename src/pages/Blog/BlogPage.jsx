@@ -23,11 +23,15 @@ const BlogPage = () => {
   }, [])
 
   const filteredPosts = blogs.filter(post => {
-    const matchesCategory = activeCategory === 'all' || post.category === activeCategory
+    // Only published and enabled posts on public storefront
+    if (post.enabled === false || post.status !== 'published') return false
+
+    const matchesCategory = activeCategory === 'all' ||
+      (post.category && post.category.toLowerCase() === activeCategory.toLowerCase())
     const matchesSearch = !searchQuery ||
       post.title?.toLowerCase().includes(searchQuery) ||
       post.excerpt?.toLowerCase().includes(searchQuery) ||
-      post.content?.toLowerCase().includes(searchQuery)
+      (typeof post.content === 'string' && post.content.toLowerCase().includes(searchQuery))
     return matchesCategory && matchesSearch
   })
 
@@ -66,7 +70,7 @@ const BlogPage = () => {
               <button
                 key={cat.id}
                 onClick={() => { setActiveCategory(cat.id); setSearchQuery('') }}
-                className={`px-5 py-2.5 rounded-full text-[14px] font-semibold tracking-wide uppercase transition-all snap-start ${activeCategory === cat.id && !searchQuery
+                className={`px-5 py-2.5 rounded-full text-[14px] font-semibold tracking-wide uppercase transition-all snap-start ${activeCategory.toLowerCase() === cat.id.toLowerCase() && !searchQuery
                   ? 'bg-[var(--charcoal-900)] text-white shadow-md'
                   : 'bg-white border border-[#E9E4DC] text-[var(--charcoal-700)] hover:border-[var(--charcoal-400)]'
                   }`}
@@ -97,8 +101,19 @@ const BlogPage = () => {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
             {filteredPosts.map(post => {
-              const dateStr = post.createdAt?.toDate ? post.createdAt.toDate().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Recent'
-              const readTime = Math.ceil((post.content?.length || 500) / 1000) + ' MIN READ'
+              let dateStr = 'Recent'
+              if (post.publishedAt) {
+                try {
+                  dateStr = new Date(post.publishedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+                } catch (e) { }
+              } else if (post.createdAt?.toDate) {
+                dateStr = post.createdAt.toDate().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+              }
+
+              const readTime = post.readTimeMinutes ? `${post.readTimeMinutes} MIN READ` : '5 MIN READ'
+              const imageSrc = post.featuredImage?.url || post.imageUrl
+              const imageAlt = post.featuredImage?.alt || post.title
+              const authorName = post.author || 'Anita Doval'
 
               return (
                 <Link
@@ -112,11 +127,12 @@ const BlogPage = () => {
                         {post.category || 'ARTICLE'}
                       </span>
                     </div>
-                    {post.imageUrl ? (
+                    {imageSrc ? (
                       <img
-                        src={post.imageUrl}
-                        alt={post.title}
+                        src={imageSrc}
+                        alt={imageAlt}
                         className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+                        onError={(e) => e.target.style.display = 'none'}
                       />
                     ) : (
                       <div className="w-full h-full bg-[#f0ebd8]"></div>
@@ -135,7 +151,7 @@ const BlogPage = () => {
                       {post.excerpt}
                     </p>
                     <div className="flex items-center justify-between pt-5 border-t border-[#f0f0f0]">
-                      <span className="text-[14px] font-semibold text-[#231F1C]">Editorial Team</span>
+                      <span className="text-[14px] font-semibold text-[#231F1C]">{authorName}</span>
                       <span className="text-[14px] font-bold tracking-widest uppercase text-[var(--gold-600)] flex items-center gap-2 group-hover:gap-3 transition-all">Read Story &rarr;</span>
                     </div>
                   </div>

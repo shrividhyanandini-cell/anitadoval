@@ -10,6 +10,12 @@ const BlogPreview = () => {
     const { sectionStyle, textClass, overlayElement } = useTheme('articles')
     const { documents: blogs, loading } = useFirestore('blogs')
 
+    const publishedBlogs = blogs.filter(b => b.enabled !== false && b.status === 'published')
+
+    if (!loading && publishedBlogs.length === 0) {
+        return null
+    }
+
     return (
         <section className={`section-pad relative bg-[#FAF9F5]`} style={sectionStyle}>
             {overlayElement && overlayElement}
@@ -38,13 +44,24 @@ const BlogPreview = () => {
 
                 {loading ? (
                     <div className="flex justify-center items-center py-20"><Loading type="spinner" /></div>
-                ) : blogs.length === 0 ? (
+                ) : publishedBlogs.length === 0 ? (
                     <div className="text-center py-10 text-gray-500">No articles available yet.</div>
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 pb-4">
-                        {blogs.slice(0, 3).map((post) => {
-                            const dateStr = post.createdAt?.toDate ? post.createdAt.toDate().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'Recent'
-                            const readTime = Math.ceil((post.content?.length || 500) / 1000) + ' MIN READ'
+                        {publishedBlogs.slice(0, 3).map((post) => {
+                            let dateStr = 'Recent'
+                            if (post.publishedAt) {
+                                try {
+                                    dateStr = new Date(post.publishedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+                                } catch (e) { }
+                            } else if (post.createdAt?.toDate) {
+                                dateStr = post.createdAt.toDate().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+                            }
+
+                            const readTime = post.readTimeMinutes ? `${post.readTimeMinutes} MIN READ` : '5 MIN READ'
+                            const imageSrc = post.featuredImage?.url || post.imageUrl
+                            const imageAlt = post.featuredImage?.alt || post.title
+                            const authorName = post.author || 'Anita Doval'
 
                             return (
                                 <Link
@@ -58,11 +75,12 @@ const BlogPreview = () => {
                                                 {post.category || 'ARTICLE'}
                                             </span>
                                         </div>
-                                        {post.imageUrl ? (
+                                        {imageSrc ? (
                                             <img
-                                                src={post.imageUrl}
-                                                alt={post.title}
+                                                src={imageSrc}
+                                                alt={imageAlt}
                                                 className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+                                                onError={(e) => e.target.style.display = 'none'}
                                             />
                                         ) : (
                                             <div className="w-full h-full bg-[#f0ebd8]"></div>
@@ -81,7 +99,7 @@ const BlogPreview = () => {
                                             {post.excerpt}
                                         </p>
                                         <div className="flex items-center justify-between pt-5 border-t border-[#f0f0f0]">
-                                            <span className="text-[14px] font-semibold text-[#231F1C]">Velouraz Editorial Team</span>
+                                            <span className="text-[14px] font-semibold text-[#231F1C]">{authorName}</span>
                                             <span className="text-[14px] font-bold tracking-widest uppercase text-[#8C7A58] flex items-center gap-2 group-hover:gap-3 transition-all">Read Story &rarr;</span>
                                         </div>
                                     </div>

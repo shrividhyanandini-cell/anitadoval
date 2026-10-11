@@ -8,7 +8,8 @@ export const DEFAULT_STYLE_CONFIG = {
         url: '',
         size: 'cover', // cover, contain, auto
         position: 'center',
-        repeat: 'no-repeat'
+        repeat: 'no-repeat',
+        attachment: 'scroll', // scroll, fixed, local
     },
     overlay: {
         enabled: false,
@@ -35,17 +36,20 @@ export const getSectionStyle = (styleConfig, windowWidth = 1200) => {
         let activeSize = styleConfig.bgImage.size || 'cover';
         let activePosition = styleConfig.bgImage.position || 'center';
         let activeRepeat = styleConfig.bgImage.repeat || 'no-repeat';
+        let activeAttachment = styleConfig.bgImage.attachment || 'scroll';
 
         if (windowWidth <= 768 && styleConfig.bgImage.mobileUrl) {
             activeUrl = styleConfig.bgImage.mobileUrl;
             activeSize = styleConfig.bgImage.mobileSize || 'cover';
             activePosition = styleConfig.bgImage.mobilePosition || 'center';
             activeRepeat = styleConfig.bgImage.mobileRepeat || 'no-repeat';
+            activeAttachment = styleConfig.bgImage.mobileAttachment || activeAttachment;
         } else if (windowWidth <= 1024 && styleConfig.bgImage.tabletUrl) {
             activeUrl = styleConfig.bgImage.tabletUrl;
             activeSize = styleConfig.bgImage.tabletSize || 'cover';
             activePosition = styleConfig.bgImage.tabletPosition || 'center';
             activeRepeat = styleConfig.bgImage.tabletRepeat || 'no-repeat';
+            activeAttachment = styleConfig.bgImage.tabletAttachment || activeAttachment;
         }
 
         if (activeUrl) {
@@ -53,6 +57,7 @@ export const getSectionStyle = (styleConfig, windowWidth = 1200) => {
             styles.backgroundSize = activeSize
             styles.backgroundPosition = activePosition
             styles.backgroundRepeat = activeRepeat
+            styles.backgroundAttachment = activeAttachment
         }
     }
 

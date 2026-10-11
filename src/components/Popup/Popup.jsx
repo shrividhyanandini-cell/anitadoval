@@ -2,6 +2,9 @@ import React, { useState } from 'react'
 import { useLanguage } from '../../context/LanguageContext'
 import { usePopup } from '../../context/PopupContext'
 import { X, User, Mail, Phone, MessageCircle, ChevronDown } from 'lucide-react'
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore'
+import { db } from '../../utils/firebase'
+import { buildWhatsAppUrl, WA_NUMBER } from '../../data/siteConfig'
 
 const Popup = () => {
   const { isHindi } = useLanguage()
@@ -46,41 +49,40 @@ const Popup = () => {
     e.preventDefault()
     setIsLoading(true)
 
+    const finalService = formData.service === 'other' ? (formData.otherService || 'Other') : (formData.service || 'General')
+    const finalData = {
+      ...formData,
+      service: finalService,
+      source: 'Popup Modal'
+    }
+
     try {
-      const response = await fetch('https://backend.anitadoval.com/send_email.php', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData)
+      // 1. Record inquiry in Firestore for admin records
+      await addDoc(collection(db, 'inquiries'), {
+        ...finalData,
+        status: 'new',
+        createdAt: serverTimestamp()
+      }).catch(err => console.warn('Firestore inquiry log notice:', err))
+
+      // 2. Redirect user to WhatsApp with pre-filled message
+      const waUrl = buildWhatsAppUrl(finalData, 'Consultation Request')
+      window.open(waUrl, '_blank')
+
+      setFormData({
+        name: '',
+        email: '',
+        phone: '',
+        service: '',
+        otherService: '',
+        message: ''
       })
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`)
-      }
-
-      const result = await response.json()
-
-      if (result.success) {
-        alert(isHindi ? 'संदेश सफलतापूर्वक भेजा गया! हम जल्द ही आपसे संपर्क करेंगे।' : 'Message sent successfully! We will contact you soon.')
-        setFormData({
-          name: '',
-          email: '',
-          phone: '',
-          service: '',
-          otherService: '',
-          message: ''
-        })
-        closePopup()
-      } else {
-        throw new Error(result.message || 'Failed to send message')
-      }
+      closePopup()
     } catch (error) {
-      console.error('Error sending message:', error)
-      alert(isHindi 
-        ? 'संदेश भेजने में त्रुटि हुई। कृपया सीधे contact@anitadoval.com पर ईमेल करें।' 
-        : 'Error sending message. Please email us directly at contact@anitadoval.com.'
-      )
+      console.error('Error submitting inquiry:', error)
+      // Fallback: Still open WhatsApp
+      const waUrl = buildWhatsAppUrl(finalData, 'Consultation Request')
+      window.open(waUrl, '_blank')
+      closePopup()
     } finally {
       setIsLoading(false)
     }
@@ -118,7 +120,7 @@ const Popup = () => {
             {isHindi ? 'मुफ्त परामर्श' : 'Free Consultation'}
           </h2>
           <p className="text-center text-white/90 mt-2">
-            {isHindi 
+            {isHindi
               ? 'अपनी समस्याओं का समाधान पाएं'
               : 'Get solutions to your problems'
             }
@@ -242,14 +244,14 @@ const Popup = () => {
             disabled={isLoading}
             className="w-full bg-gradient-to-r from-primary-600 to-gold-500 text-white py-3 px-6 rounded-lg font-semibold hover:from-primary-700 hover:to-gold-600 transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {isLoading 
+            {isLoading
               ? (isHindi ? 'भेज रहा है...' : 'Sending...')
               : (isHindi ? 'संदेश भेजें' : 'Send Message')
             }
           </button>
 
           <p className="text-sm text-center text-gray-500 dark:text-gray-400">
-            {isHindi 
+            {isHindi
               ? 'हम 24 घंटे के भीतर आपसे संपर्क करेंगे'
               : 'We will contact you within 24 hours'
             }

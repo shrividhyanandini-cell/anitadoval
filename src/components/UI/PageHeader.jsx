@@ -4,7 +4,7 @@ import { db } from '../../utils/firebase'
 import { useResponsiveBackground } from '../../hooks/useResponsiveBackground'
 
 const PageHeader = ({
-    pageId, // for fetching dynamic background: 'contact', 'services', 'blog', 'about' etc.
+    pageId, // for fetching dynamic background: 'contact', 'services', 'blog', 'about', 'connect' etc.
     eyebrow = '',
     title = '',
     description = ''
@@ -14,8 +14,9 @@ const PageHeader = ({
             url: '',
             tabletUrl: '',
             mobileUrl: '',
-            overlayOpacity: 0.1,
-            enabled: false,
+            overlayOpacity: 0.35,
+            enabled: true,
+            attachment: 'scroll'
         }
     })
 
@@ -34,8 +35,8 @@ const PageHeader = ({
         if (pageId) fetchConfig()
     }, [pageId])
 
-    const responsiveBgStyle = useResponsiveBackground(config.background)
-    const hasBg = config.background?.enabled && responsiveBgStyle.backgroundImage
+    const responsiveBgStyle = useResponsiveBackground(config?.background)
+    const hasBg = Boolean(responsiveBgStyle?.backgroundImage) && (config?.background?.enabled !== false)
 
     return (
         <section
@@ -51,10 +52,11 @@ const PageHeader = ({
                 </div>
             )}
 
+            {/* Dark overlay for contrast */}
             {hasBg && (
                 <div
                     className="absolute inset-0 z-0 pointer-events-none bg-black"
-                    style={{ opacity: config.background.overlayOpacity || 0.4 }}
+                    style={{ opacity: config.background?.overlayOpacity ?? 0.35 }}
                 />
             )}
 

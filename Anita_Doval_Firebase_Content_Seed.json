@@ -1,0 +1,597 @@
+{
+    "schemaVersion": "1.0",
+    "project": {
+        "name": "Anita Doval Website",
+        "purpose": "Initial content seed for Firebase/Firestore.",
+        "importantNotes": [
+            "Service and blog copy is suggested starter content; keep as draft until Anita Ma'am approves it.",
+            "Testimonials are intentionally empty. Never invent or publish fake testimonials.",
+            "Verify all experience, pricing, availability, contact details and claims before publishing.",
+            "Replace image URLs only with approved media; blank URLs should show a placeholder."
+        ]
+    },
+    "firebase": {
+        "recommendedCollections": {
+            "services": "Service cards and service detail content",
+            "testimonials": "Authentic, client-approved testimonials only",
+            "faqs": "FAQ questions and answers",
+            "blogs": "Blog articles; render only in the Blog section/page"
+        },
+        "documentIdStrategy": "Use stable id/slug values and upsert to avoid duplicates.",
+        "publicVisibilityRule": "Only enabled records with status='published' should be shown publicly."
+    },
+    "services": [
+        {
+            "id": "astrology-consultation",
+            "slug": "astrology-consultation",
+            "title": "Astrology Consultation",
+            "shortDescription": "Explore your birth chart and traditional astrological perspectives on life's questions and important decisions.",
+            "cardIcon": "star",
+            "sortOrder": 1,
+            "enabled": true,
+            "price": "",
+            "duration": "",
+            "image": {
+                "url": "",
+                "alt": "Astrology consultation and birth chart"
+            },
+            "detailedDescription": "A personalized consultation exploring your birth details and selected questions through traditional astrological interpretation. This offers perspectives for reflection, not guaranteed outcomes.",
+            "features": [
+                "Discussion of your main questions",
+                "Traditional birth-chart interpretation where applicable",
+                "Guidance within the agreed consultation scope"
+            ],
+            "status": "draft"
+        },
+        {
+            "id": "vastu-consultation",
+            "slug": "vastu-consultation",
+            "title": "Vastu Consultation",
+            "shortDescription": "Explore traditional Vastu principles for a considered and harmonious living or working space.",
+            "cardIcon": "house",
+            "sortOrder": 2,
+            "enabled": true,
+            "price": "",
+            "duration": "",
+            "image": {
+                "url": "",
+                "alt": "Vastu consultation for a home or workspace"
+            },
+            "detailedDescription": "A consultation focused on questions about a home or workplace using traditional Vastu concepts. Confirm the exact scope before booking.",
+            "features": [
+                "Discuss the space and your concerns",
+                "Review relevant layout details if supplied",
+                "Agree on practical next steps"
+            ],
+            "status": "draft"
+        },
+        {
+            "id": "numerology-consultation",
+            "slug": "numerology-consultation",
+            "title": "Numerology Consultation",
+            "shortDescription": "Explore traditional numerology interpretations associated with numbers and personal details.",
+            "cardIcon": "hash",
+            "sortOrder": 3,
+            "enabled": true,
+            "price": "",
+            "duration": "",
+            "image": {
+                "url": "",
+                "alt": "Numerology consultation"
+            },
+            "detailedDescription": "A discussion of numerology concepts relevant to your questions. Methods and interpretations vary; this is not a scientifically validated prediction.",
+            "features": [
+                "Discuss your questions",
+                "Interpret relevant numbers using the agreed method",
+                "Summarize the guidance discussed"
+            ],
+            "status": "draft"
+        },
+        {
+            "id": "palmistry-consultation",
+            "slug": "palmistry-consultation",
+            "title": "Palmistry Consultation",
+            "shortDescription": "Explore traditional palmistry interpretations and the meanings associated with palm features.",
+            "cardIcon": "hand",
+            "sortOrder": 4,
+            "enabled": true,
+            "price": "",
+            "duration": "",
+            "image": {
+                "url": "",
+                "alt": "Palmistry consultation"
+            },
+            "detailedDescription": "A discussion of palm features through traditional palmistry interpretations. Present interpretations as a traditional perspective, not certain predictions.",
+            "features": [
+                "Review palm details or images if supported",
+                "Explain traditional palmistry concepts",
+                "Discuss your questions"
+            ],
+            "status": "draft"
+        },
+        {
+            "id": "yoga-meditation",
+            "slug": "yoga-meditation",
+            "title": "Yog & Meditation",
+            "shortDescription": "Explore yoga and meditation practices that may support a more mindful daily routine.",
+            "cardIcon": "lotus",
+            "sortOrder": 5,
+            "enabled": true,
+            "price": "",
+            "duration": "",
+            "image": {
+                "url": "",
+                "alt": "Yoga and meditation practice"
+            },
+            "detailedDescription": "General guidance about yoga and meditation based on the agreed scope and experience level. This is not a substitute for medical advice.",
+            "features": [
+                "Discuss goals and experience",
+                "Introduce suitable general practices",
+                "Consider a manageable routine"
+            ],
+            "status": "draft"
+        },
+        {
+            "id": "mantra-upasana",
+            "slug": "mantra-upasana",
+            "title": "Mantra Upasana",
+            "shortDescription": "Learn about traditional mantra practices and how they may fit into a spiritual routine.",
+            "cardIcon": "sparkles",
+            "sortOrder": 6,
+            "enabled": true,
+            "price": "",
+            "duration": "",
+            "image": {
+                "url": "",
+                "alt": "Mantra Upasana and spiritual practice"
+            },
+            "detailedDescription": "Guidance about traditional mantra practices, their context and considerations for daily practice. List specific rituals or initiation only if confirmed by the client.",
+            "features": [
+                "Introduction to relevant traditions",
+                "Discuss practice and routine",
+                "Guidance within confirmed session scope"
+            ],
+            "status": "draft"
+        },
+        {
+            "id": "spiritual-guidance",
+            "slug": "spiritual-guidance",
+            "title": "Spiritual Guidance",
+            "shortDescription": "Discuss spiritual practices, reflection and personal questions in a thoughtful consultation.",
+            "cardIcon": "heart",
+            "sortOrder": 7,
+            "enabled": true,
+            "price": "",
+            "duration": "",
+            "image": {
+                "url": "",
+                "alt": "Spiritual guidance consultation"
+            },
+            "detailedDescription": "A conversation about spiritual questions and interests, drawing on traditions confirmed by Anita Doval. Do not promise particular life outcomes.",
+            "features": [
+                "Discuss spiritual interests",
+                "Explore relevant traditional practices",
+                "Identify next steps for reflection"
+            ],
+            "status": "draft"
+        }
+    ],
+    "testimonials": [],
+    "faqs": [
+        {
+            "id": "consultation-expectations",
+            "slug": "consultation-expectations",
+            "question": "What can I expect in a consultation?",
+            "answer": "The consultation begins with your questions and the service you are interested in. Anita Doval will discuss relevant traditional concepts within the agreed session scope. Guidance is offered for reflection; specific outcomes are not guaranteed.",
+            "sortOrder": 1,
+            "enabled": true,
+            "status": "draft"
+        },
+        {
+            "id": "services-offered",
+            "slug": "services-offered",
+            "question": "What services are available?",
+            "answer": "Potential services include Astrology Consultation, Vastu Consultation, Numerology Consultation, Palmistry Consultation, Yog & Meditation, Mantra Upasana and Spiritual Guidance. Please confirm current availability and exact scope before publishing.",
+            "sortOrder": 2,
+            "enabled": true,
+            "status": "draft"
+        },
+        {
+            "id": "book-consultation",
+            "slug": "book-consultation",
+            "question": "How can I book a consultation?",
+            "answer": "Use the Book a Consultation option or Connect page to contact Anita Doval through verified contact details or the inquiry form. Appointment confirmation depends on availability.",
+            "sortOrder": 3,
+            "enabled": true,
+            "status": "draft"
+        },
+        {
+            "id": "online-consultation",
+            "slug": "online-consultation",
+            "question": "Are online consultations available?",
+            "answer": "Please contact us to confirm whether online consultations are available for your selected service and to understand the booking process.",
+            "sortOrder": 4,
+            "enabled": true,
+            "status": "draft"
+        },
+        {
+            "id": "prepare-for-consultation",
+            "slug": "prepare-for-consultation",
+            "question": "What information should I provide before a consultation?",
+            "answer": "Share your name, contact details, the service you are interested in and the questions you want to discuss. Birth details should be provided only when relevant to the selected service.",
+            "sortOrder": 5,
+            "enabled": true,
+            "status": "draft"
+        },
+        {
+            "id": "consultation-fees",
+            "slug": "consultation-fees",
+            "question": "Where can I find consultation fees?",
+            "answer": "Confirm current consultation fees and session duration directly before booking. Contact us for details of your selected service.",
+            "sortOrder": 6,
+            "enabled": true,
+            "status": "draft"
+        },
+        {
+            "id": "vastu-service",
+            "slug": "vastu-service",
+            "question": "What should I share for a Vastu consultation?",
+            "answer": "Ask which details are needed for your case. Depending on the agreed scope, this may include a floor plan, approximate directions and questions about the space.",
+            "sortOrder": 7,
+            "enabled": true,
+            "status": "draft"
+        },
+        {
+            "id": "guaranteed-results",
+            "slug": "guaranteed-results",
+            "question": "Can a consultation guarantee a particular result?",
+            "answer": "No specific life outcome can be guaranteed. Consultations explain traditional interpretations and perspectives for reflection; important decisions should also consider relevant evidence and professional advice.",
+            "sortOrder": 8,
+            "enabled": true,
+            "status": "draft"
+        }
+    ],
+    "blogs": [
+        {
+            "id": "understanding-birth-chart",
+            "slug": "understanding-your-birth-chart",
+            "title": "Understanding Your Birth Chart: A Beginner's Guide",
+            "excerpt": "Learn what a birth chart represents in traditional astrology and how its main elements are commonly interpreted.",
+            "category": "Astrology",
+            "author": "Anita Doval",
+            "publishedAt": "",
+            "readTimeMinutes": 5,
+            "featuredImage": {
+                "url": "",
+                "alt": "Traditional astrology birth chart"
+            },
+            "content": [
+                {
+                    "type": "paragraph",
+                    "text": "A birth chart is calculated from a person's date, time and place of birth. In traditional astrology, it is interpreted through elements such as planets, signs and houses."
+                },
+                {
+                    "type": "heading",
+                    "text": "What does a birth chart include?"
+                },
+                {
+                    "type": "paragraph",
+                    "text": "Depending on the tradition, an interpretation may consider planetary placements, signs, houses and their relationships. Different traditions may use different methods."
+                },
+                {
+                    "type": "heading",
+                    "text": "How should beginners approach it?"
+                },
+                {
+                    "type": "paragraph",
+                    "text": "Start by learning the terminology and asking clear questions. Treat interpretations as part of a cultural or reflective practice rather than scientifically established predictions."
+                }
+            ],
+            "seo": {
+                "metaTitle": "Understanding Your Birth Chart | Anita Doval",
+                "metaDescription": "A beginner-friendly introduction to birth charts and how they are interpreted in traditional astrology."
+            },
+            "status": "draft"
+        },
+        {
+            "id": "vastu-home-basics",
+            "slug": "vastu-principles-for-your-home",
+            "title": "Vastu Principles for Your Home: What to Know",
+            "excerpt": "An introduction to common traditional Vastu concepts used when discussing homes and living spaces.",
+            "category": "Vastu",
+            "author": "Anita Doval",
+            "publishedAt": "",
+            "readTimeMinutes": 4,
+            "featuredImage": {
+                "url": "",
+                "alt": "Calm and thoughtfully arranged home interior"
+            },
+            "content": [
+                {
+                    "type": "paragraph",
+                    "text": "Vastu Shastra is a traditional Indian system that discusses the arrangement and orientation of buildings and spaces."
+                },
+                {
+                    "type": "heading",
+                    "text": "Start with the space you have"
+                },
+                {
+                    "type": "paragraph",
+                    "text": "Document the current layout, practical needs and questions you want to discuss. Comfort, safety, accessibility and budget should remain important considerations."
+                },
+                {
+                    "type": "heading",
+                    "text": "Use guidance thoughtfully"
+                },
+                {
+                    "type": "paragraph",
+                    "text": "Vastu interpretations vary. Consider recommendations alongside practical constraints and avoid assuming that a particular layout guarantees prosperity or health."
+                }
+            ],
+            "seo": {
+                "metaTitle": "Vastu Principles for Your Home | Anita Doval",
+                "metaDescription": "Explore common traditional Vastu concepts for homes and living spaces in this beginner-friendly guide."
+            },
+            "status": "draft"
+        },
+        {
+            "id": "numerology-basics",
+            "slug": "numerology-basics-and-number-meanings",
+            "title": "Numerology Basics: Numbers and Their Traditional Meanings",
+            "excerpt": "Discover how numbers are interpreted in numerology traditions and what to know before a reading.",
+            "category": "Numerology",
+            "author": "Anita Doval",
+            "publishedAt": "",
+            "readTimeMinutes": 4,
+            "featuredImage": {
+                "url": "",
+                "alt": "Elegant numerology numbers and notes"
+            },
+            "content": [
+                {
+                    "type": "paragraph",
+                    "text": "Numerology is a set of traditions that assign symbolic meanings to numbers. Methods and interpretations vary across systems."
+                },
+                {
+                    "type": "heading",
+                    "text": "How are numbers interpreted?"
+                },
+                {
+                    "type": "paragraph",
+                    "text": "A reading may use dates or names according to a particular method. Ask which system is being used and how the interpretation is reached."
+                },
+                {
+                    "type": "paragraph",
+                    "text": "Numerology should be understood as a symbolic or spiritual tradition, not a scientifically validated method for predicting outcomes."
+                }
+            ],
+            "seo": {
+                "metaTitle": "Numerology Basics | Anita Doval",
+                "metaDescription": "Learn how numbers are interpreted in numerology traditions and how to approach a reading thoughtfully."
+            },
+            "status": "draft"
+        },
+        {
+            "id": "palmistry-introduction",
+            "slug": "palmistry-an-introduction",
+            "title": "Palmistry: An Introduction to Traditional Palm Reading",
+            "excerpt": "A simple overview of common palmistry concepts and how practitioners discuss palm features.",
+            "category": "Palmistry",
+            "author": "Anita Doval",
+            "publishedAt": "",
+            "readTimeMinutes": 4,
+            "featuredImage": {
+                "url": "",
+                "alt": "Palmistry reference with a hand and palm lines"
+            },
+            "content": [
+                {
+                    "type": "paragraph",
+                    "text": "Palmistry is a traditional practice in which palm features and lines are assigned symbolic interpretations."
+                },
+                {
+                    "type": "heading",
+                    "text": "What may a reading discuss?"
+                },
+                {
+                    "type": "paragraph",
+                    "text": "Practitioners may discuss line patterns, hand shape and other features according to their tradition. Interpretations are not a reliable scientific way to determine a person's future."
+                },
+                {
+                    "type": "paragraph",
+                    "text": "If you book a reading, ask about the approach used and treat the session as a cultural or reflective experience."
+                }
+            ],
+            "seo": {
+                "metaTitle": "Palmistry Introduction | Anita Doval",
+                "metaDescription": "Explore common traditional palmistry concepts and learn how to approach palm reading thoughtfully."
+            },
+            "status": "draft"
+        },
+        {
+            "id": "meditation-routine",
+            "slug": "building-a-simple-meditation-routine",
+            "title": "Building a Simple Meditation Routine",
+            "excerpt": "Practical ideas for creating a manageable meditation habit that fits into everyday life.",
+            "category": "Spirituality",
+            "author": "Anita Doval",
+            "publishedAt": "",
+            "readTimeMinutes": 3,
+            "featuredImage": {
+                "url": "",
+                "alt": "Quiet meditation space with soft natural light"
+            },
+            "content": [
+                {
+                    "type": "paragraph",
+                    "text": "A meditation routine can begin with a short, quiet period in which you sit comfortably and bring attention to your breathing or another chosen focus."
+                },
+                {
+                    "type": "heading",
+                    "text": "Keep the first steps manageable"
+                },
+                {
+                    "type": "paragraph",
+                    "text": "Choose a time and place that work for you. Start with a few minutes, reduce distractions and return to the practice without judging yourself when attention wanders."
+                },
+                {
+                    "type": "paragraph",
+                    "text": "Meditation experiences differ from person to person. Adjust the practice to your comfort and seek qualified help if you need support for a health concern."
+                }
+            ],
+            "seo": {
+                "metaTitle": "Building a Simple Meditation Routine | Anita Doval",
+                "metaDescription": "Simple, practical steps to begin a meditation routine and make it easier to maintain."
+            },
+            "status": "draft"
+        },
+        {
+            "id": "mantra-practice",
+            "slug": "understanding-mantra-practice",
+            "title": "Understanding Mantra Practice and Its Traditions",
+            "excerpt": "Learn about the role of repetition, attention and tradition in different mantra practices.",
+            "category": "Spirituality",
+            "author": "Anita Doval",
+            "publishedAt": "",
+            "readTimeMinutes": 4,
+            "featuredImage": {
+                "url": "",
+                "alt": "Traditional prayer beads in a calm setting"
+            },
+            "content": [
+                {
+                    "type": "paragraph",
+                    "text": "Mantra practices appear in several Indian religious and spiritual traditions. Meaning, pronunciation and method can differ according to the tradition."
+                },
+                {
+                    "type": "heading",
+                    "text": "Learn the context"
+                },
+                {
+                    "type": "paragraph",
+                    "text": "Learn the context and pronunciation from a reliable source or qualified teacher where appropriate. Practices should be approached respectfully."
+                },
+                {
+                    "type": "paragraph",
+                    "text": "Avoid treating a mantra as a guaranteed way to obtain a specific material, personal or health outcome."
+                }
+            ],
+            "seo": {
+                "metaTitle": "Understanding Mantra Practice | Anita Doval",
+                "metaDescription": "An introduction to mantra practice, tradition and thoughtful ways to learn about it."
+            },
+            "status": "draft"
+        },
+        {
+            "id": "astrology-and-reflection",
+            "slug": "astrology-as-a-tool-for-reflection",
+            "title": "Astrology as a Tool for Reflection: Questions to Ask",
+            "excerpt": "Ways to approach an astrology consultation with clear questions and realistic expectations.",
+            "category": "Astrology",
+            "author": "Anita Doval",
+            "publishedAt": "",
+            "readTimeMinutes": 4,
+            "featuredImage": {
+                "url": "",
+                "alt": "Astrology notes and a birth chart on a desk"
+            },
+            "content": [
+                {
+                    "type": "paragraph",
+                    "text": "People approach astrology for many reasons, including curiosity, cultural connection and reflection on personal questions."
+                },
+                {
+                    "type": "heading",
+                    "text": "Prepare your questions"
+                },
+                {
+                    "type": "paragraph",
+                    "text": "Write down the topics you want to discuss and ask the practitioner to explain the method and its limitations."
+                },
+                {
+                    "type": "paragraph",
+                    "text": "Astrology is not established as a scientific method for predicting life events. Use any interpretation as one perspective, and make important decisions using relevant evidence and professional advice."
+                }
+            ],
+            "seo": {
+                "metaTitle": "Astrology for Reflection | Anita Doval",
+                "metaDescription": "Prepare thoughtful questions for an astrology consultation and understand the importance of realistic expectations."
+            },
+            "status": "draft"
+        },
+        {
+            "id": "choosing-vastu-consultation",
+            "slug": "how-to-prepare-for-a-vastu-consultation",
+            "title": "How to Prepare for a Vastu Consultation",
+            "excerpt": "A practical checklist of information to gather before discussing your home or workspace.",
+            "category": "Vastu",
+            "author": "Anita Doval",
+            "publishedAt": "",
+            "readTimeMinutes": 3,
+            "featuredImage": {
+                "url": "",
+                "alt": "Home floor plan and notebook prepared for a consultation"
+            },
+            "content": [
+                {
+                    "type": "paragraph",
+                    "text": "Identify the room, area or layout question you want to discuss before a Vastu consultation."
+                },
+                {
+                    "type": "heading",
+                    "text": "What to gather"
+                },
+                {
+                    "type": "paragraph",
+                    "text": "Depending on the consultation, you may be asked for a floor plan, approximate directions, photographs of relevant areas and a short list of questions. Confirm requirements before sharing files."
+                },
+                {
+                    "type": "paragraph",
+                    "text": "Any recommendations should be considered alongside safety, accessibility, building rules and budget."
+                }
+            ],
+            "seo": {
+                "metaTitle": "Prepare for a Vastu Consultation | Anita Doval",
+                "metaDescription": "Use this practical checklist to prepare information and questions for a Vastu consultation."
+            },
+            "status": "draft"
+        },
+        {
+            "id": "spiritual-routine",
+            "slug": "creating-a-personal-spiritual-routine",
+            "title": "Creating a Personal Spiritual Routine",
+            "excerpt": "A thoughtful approach to building a spiritual routine around your values, time and traditions.",
+            "category": "Spirituality",
+            "author": "Anita Doval",
+            "publishedAt": "",
+            "readTimeMinutes": 4,
+            "featuredImage": {
+                "url": "",
+                "alt": "Simple personal reflection space"
+            },
+            "content": [
+                {
+                    "type": "paragraph",
+                    "text": "A personal spiritual routine can include reflection, prayer, reading, meditation or other practices that are meaningful within your tradition."
+                },
+                {
+                    "type": "heading",
+                    "text": "Build around what is sustainable"
+                },
+                {
+                    "type": "paragraph",
+                    "text": "Start with a small practice that fits your schedule. Review it over time and adapt it to your needs and beliefs."
+                },
+                {
+                    "type": "paragraph",
+                    "text": "There is no single routine that suits everyone. Approach different traditions respectfully and choose practices that align with your values."
+                }
+            ],
+            "seo": {
+                "metaTitle": "Creating a Personal Spiritual Routine | Anita Doval",
+                "metaDescription": "Ideas for building a manageable, meaningful spiritual routine that respects your values and traditions."
+            },
+            "status": "draft"
+        }
+    ]
+}

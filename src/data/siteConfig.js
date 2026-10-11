@@ -17,21 +17,19 @@ export const SITE_CONFIG = {
   },
 
   // ── Contact ─────────────────────────────────────────────
-  // TODO: Replace placeholders with confirmed contact details
   contact: {
-    // phone: '+91-XXXXXXXXXX',       // Awaiting client confirmation
-    // whatsapp: '+91-XXXXXXXXXX',    // Awaiting client confirmation
-    email: 'contact@anitadoval.com',  // To be confirmed / activated
-    address: 'Madhya Pradesh, India', // Client-approved address format
+    phone: '+91 88899 00033',
+    whatsapp: '918889900033',
+    email: 'contact@anitadoval.com',
+    address: 'Madhya Pradesh, India',
   },
 
   // ── Social Links ─────────────────────────────────────────
-  // TODO: Replace # with actual social profile URLs
   social: {
-    instagram: '#',   // Awaiting client confirmation
-    facebook: '#',    // Awaiting client confirmation
-    youtube: '#',     // Awaiting client confirmation
-    whatsapp: '#',    // Awaiting client WhatsApp link/number
+    instagram: '#',
+    facebook: '#',
+    youtube: '#',
+    whatsapp: 'https://wa.me/918889900033?text=' + encodeURIComponent("Hello Anita Ma'am, I would like to connect for a consultation."),
   },
 
   // ── Connect Page ─────────────────────────────────────────
@@ -47,6 +45,31 @@ export const SITE_CONFIG = {
     ogImage: '/images/og-image.jpg',
     siteUrl: 'https://anitadoval.com',
   },
+}
+
+// ── WhatsApp Master Number ───────────────────────────────
+// Always use this number for ALL WhatsApp redirects site-wide
+export const WA_NUMBER = '918889900033'
+
+/**
+ * Builds a WhatsApp redirect URL with a pre-filled message from form data.
+ * @param {Object} formData — form fields (name, phone, service, message, etc.)
+ * @param {string} [context] — optional context label e.g. 'Consultation Request'
+ * @returns {string} — wa.me URL
+ */
+export const buildWhatsAppUrl = (formData = {}, context = 'Consultation Inquiry') => {
+  const lines = [`🙏 *${context}* — Anita Doval Consultations`]
+  if (formData.name) lines.push(`👤 *Name:* ${formData.name}`)
+  if (formData.phone) lines.push(`📞 *Phone:* ${formData.phone}`)
+  if (formData.email) lines.push(`📧 *Email:* ${formData.email}`)
+  if (formData.service || formData.serviceSlug)
+    lines.push(`🔯 *Service:* ${formData.service || formData.serviceSlug}`)
+  if (formData.dateOfBirth) lines.push(`🎂 *Date of Birth:* ${formData.dateOfBirth}`)
+  if (formData.timeOfBirth) lines.push(`⏰ *Time of Birth:* ${formData.timeOfBirth}`)
+  if (formData.placeOfBirth) lines.push(`📍 *Place of Birth:* ${formData.placeOfBirth}`)
+  if (formData.message) lines.push(`💬 *Message:* ${formData.message}`)
+  const msg = lines.join('\n')
+  return `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(msg)}`
 }
 
 export default SITE_CONFIG
