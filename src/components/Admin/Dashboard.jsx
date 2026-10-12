@@ -18,7 +18,9 @@ import ThemeCustomizer from './ThemeCustomizer'
 import SettingsManager from './SettingsManager'
 import PageHeadersManager from './PageHeadersManager'
 import BackupManager from './BackupManager'
-import { Book, BookOpen, Video, Settings, Image as ImageIcon, LogOut, Users, Mail, LayoutTemplate, UserCircle, Layers, Search, Bell, Menu, Anchor, PaintBucket, Link as LinkIcon, ImagePlus, Database } from 'lucide-react'
+import VideoLibraryManager from './VideoLibraryManager'
+import ConnectLinksManager from './ConnectLinksManager'
+import { Book, BookOpen, Video, Settings, Image as ImageIcon, LogOut, Users, Mail, LayoutTemplate, UserCircle, Layers, Search, Bell, Menu, Anchor, PaintBucket, Link as LinkIcon, ImagePlus, Database, Film } from 'lucide-react'
 import Button from '../UI/Button'
 
 const Dashboard = () => {
@@ -49,6 +51,8 @@ const Dashboard = () => {
         { id: 'philosophy', label: isHindi ? 'दर्शन' : 'Philosophy', icon: Layers },
         { id: 'process', label: isHindi ? 'परामर्श प्रक्रिया' : 'Consultation Process', icon: Anchor },
         { id: 'guides', label: isHindi ? 'परामर्श गाइड' : 'Guides Section', icon: BookOpen },
+        { id: 'videoLibrary', label: isHindi ? 'वीडियो लाइब्रेरी' : 'Video Library', icon: Film },
+        { id: 'connectLinks', label: isHindi ? 'कनेक्ट पेज लिंक्स (QR)' : 'Connect & QR Hub Links', icon: LinkIcon },
         { id: 'faq', label: 'FAQ', icon: Settings },
         { id: 'cta', label: 'Bottom CTA', icon: Book },
     ]
@@ -74,6 +78,8 @@ const Dashboard = () => {
             case 'philosophy': return <PhilosophyManager />
             case 'process': return <ProcessManager />
             case 'guides': return <GuidesManager />
+            case 'videoLibrary': return <VideoLibraryManager />
+            case 'connectLinks': return <ConnectLinksManager />
             case 'faq': return <FAQManager />
             case 'cta': return <CTAManager />
             case 'blogs': return <BlogManager />

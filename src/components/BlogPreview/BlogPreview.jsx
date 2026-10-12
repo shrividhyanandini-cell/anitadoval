@@ -16,9 +16,17 @@ const BlogPreview = () => {
         return null
     }
 
+    const hasBg = Boolean(sectionStyle?.backgroundImage)
+    const activeSectionStyle = hasBg
+        ? { ...sectionStyle, backgroundSize: sectionStyle.backgroundSize || 'cover' }
+        : sectionStyle
+
     return (
-        <section className={`section-pad relative bg-[#FAF9F5]`} style={sectionStyle}>
-            {overlayElement && overlayElement}
+        <section className={`section-pad relative ${!hasBg ? 'bg-[#FAF9F5]' : ''} ${textClass}`} style={activeSectionStyle}>
+            {overlayElement}
+            {hasBg && !overlayElement && (
+                <div className={`absolute inset-0 pointer-events-none z-0 ${textClass.includes('white') ? 'bg-black/50' : 'bg-white/40'}`} />
+            )}
 
             {/* Astrology Decorations */}
             <SectionMotionOverlay type="blog" intensity={0.15} />

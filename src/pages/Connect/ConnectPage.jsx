@@ -1,23 +1,109 @@
 import React, { useState, useEffect } from 'react'
 import { QRCodeSVG } from 'qrcode.react'
-import { X, Play, Share2, ExternalLink } from 'lucide-react'
+import { X, Play, Share2, ExternalLink, MessageCircle } from 'lucide-react'
+import { doc, getDoc, collection, getDocs } from 'firebase/firestore'
+import { db } from '../../utils/firebase'
 import { usePopup } from '../../context/PopupContext'
 import { useSettings } from '../../hooks/useSettings'
-import { SITE_CONFIG } from '../../data/siteConfig'
+import { WA_NUMBER, buildWhatsAppUrl } from '../../data/siteConfig'
+import { DEFAULT_5_VIDEOS } from '../../components/Admin/VideoLibraryManager'
+
+const DEFAULT_CONNECT_LINKS = {
+    book: {
+        actionType: 'popup',
+        customUrl: ''
+    },
+    waBusiness: {
+        url: `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent("Hello Anita Ma'am, I would like to connect on WhatsApp.")}`
+    },
+    website: {
+        url: '/'
+    },
+    location: {
+        url: 'https://maps.google.com/?q=Madhya+Pradesh+India'
+    },
+    whatsapp: {
+        url: `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent("Hello Anita Ma'am, I would like to inquire about a consultation.")}`
+    },
+    facebook: {
+        url: 'https://facebook.com'
+    },
+    instagram: {
+        url: 'https://instagram.com'
+    },
+    linkedin: {
+        url: 'https://linkedin.com'
+    },
+    twitter: {
+        url: 'https://twitter.com'
+    },
+    youtube: {
+        url: 'https://youtube.com'
+    },
+    google: {
+        url: 'https://google.com'
+    }
+}
 
 const ConnectPage = () => {
     const { openPopup } = usePopup()
     const { settings } = useSettings()
+    const [connectLinks, setConnectLinks] = useState(DEFAULT_CONNECT_LINKS)
+    const [videoLibraryItems, setVideoLibraryItems] = useState(DEFAULT_5_VIDEOS)
     const [selectedVideo, setSelectedVideo] = useState(null)
     const [copied, setCopied] = useState(false)
 
     useEffect(() => {
         window.scrollTo(0, 0)
+
+        // 1. Fetch Dynamic Connect Links from Firestore
+        const fetchConnectLinks = async () => {
+            try {
+                const linksSnap = await getDoc(doc(db, 'settings', 'connect_links'))
+                if (linksSnap.exists()) {
+                    setConnectLinks(prev => ({
+                        ...prev,
+                        ...linksSnap.data()
+                    }))
+                }
+            } catch (err) {
+                console.warn('Using default connect links', err)
+            }
+        }
+
+        // 2. Fetch Dynamic Video Library from Firestore
+        const fetchVideos = async () => {
+            try {
+                const videosSnap = await getDocs(collection(db, 'video_library'))
+                const items = videosSnap.docs
+                    .filter(d => d.id !== 'config' && d.data().enabled !== false)
+                    .map(d => {
+                        const data = d.data()
+                        return {
+                            id: d.id,
+                            title: data.title || '',
+                            desc: data.desc || data.description || '',
+                            url: data.url || data.youtubeUrl || '',
+                            thumbnail: data.thumbnail || data.thumbnailUrl || '',
+                            order: data.order ?? 0,
+                            ...data
+                        }
+                    })
+                    .sort((a, b) => (a.order || 0) - (b.order || 0))
+
+                if (items.length > 0) {
+                    setVideoLibraryItems(items)
+                }
+            } catch (err) {
+                console.warn('Using default videos fallback', err)
+            }
+        }
+
+        fetchConnectLinks()
+        fetchVideos()
     }, [])
 
-    const whatsappNumber = settings?.contact?.whatsapp || '919876543210'
-    const cleanWa = whatsappNumber.replace(/[^0-9]/g, '')
-    const whatsappUrl = `https://wa.me/${cleanWa}?text=${encodeURIComponent('Hello Anita Ma\'am, I would like to inquire about a consultation.')}`
+    const whatsappDefaultUrl = `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent("Hello Anita Ma'am, I would like to inquire about a consultation.")}`
 
     const handleShare = () => {
         if (navigator.share) {
@@ -33,12 +119,29 @@ const ConnectPage = () => {
         }
     }
 
-    // Exact grid items from user's screenshot
+    // Helper to execute dynamic link actions
+    const handleLinkClick = (url, fallbackUrl = '') => {
+        const target = url || fallbackUrl
+        if (!target) return
+        if (target.startsWith('http://') || target.startsWith('https://')) {
+            window.open(target, '_blank')
+        } else {
+            window.location.href = target
+        }
+    }
+
+    // Exact 11 grid items from user's flyer design, powered by dynamic Firestore links
     const scanItems = [
         {
             id: 'book',
             title: 'Book\nAppointment',
-            action: () => openPopup(),
+            action: () => {
+                if (connectLinks.book?.actionType === 'custom_url' && connectLinks.book?.customUrl) {
+                    handleLinkClick(connectLinks.book.customUrl)
+                } else {
+                    openPopup()
+                }
+            },
             icon: (
                 <div className="w-14 h-14 rounded-full bg-[#8c1818] text-white flex flex-col items-center justify-center font-bold text-[10px] leading-tight uppercase border-2 border-[#b52626] shadow-sm">
                     <span>BOOK</span>
@@ -50,7 +153,7 @@ const ConnectPage = () => {
         {
             id: 'wa-business',
             title: 'Connect On\nWhatsApp',
-            action: () => window.open(whatsappUrl, '_blank'),
+            action: () => handleLinkClick(connectLinks.waBusiness?.url, whatsappDefaultUrl),
             icon: (
                 <div className="w-14 h-14 rounded-xl bg-[#25D366] text-white flex items-center justify-center font-bold text-2xl shadow-sm">
                     B
@@ -60,7 +163,7 @@ const ConnectPage = () => {
         {
             id: 'website',
             title: 'Visit\nWebsite',
-            action: () => { window.location.href = '/' },
+            action: () => handleLinkClick(connectLinks.website?.url, '/'),
             icon: (
                 <div className="w-14 h-14 rounded-full bg-white border border-stone-200 flex items-center justify-center shadow-sm overflow-hidden p-1">
                     <svg viewBox="0 0 48 48" className="w-11 h-11">
@@ -77,7 +180,7 @@ const ConnectPage = () => {
         {
             id: 'location',
             title: 'location',
-            action: () => window.open('https://maps.google.com/?q=Madhya+Pradesh+India', '_blank'),
+            action: () => handleLinkClick(connectLinks.location?.url, 'https://maps.google.com/?q=Madhya+Pradesh+India'),
             icon: (
                 <div className="w-14 h-14 rounded-full bg-stone-50 border border-stone-200 flex items-center justify-center shadow-sm">
                     <svg viewBox="0 0 24 24" className="w-10 h-10 text-[#d32f2f]" fill="currentColor">
@@ -89,7 +192,7 @@ const ConnectPage = () => {
         {
             id: 'whatsapp',
             title: 'whatsapp',
-            action: () => window.open(whatsappUrl, '_blank'),
+            action: () => handleLinkClick(connectLinks.whatsapp?.url, whatsappDefaultUrl),
             icon: (
                 <div className="w-14 h-14 rounded-2xl bg-[#25D366] text-white flex items-center justify-center shadow-sm">
                     <svg viewBox="0 0 24 24" className="w-9 h-9 fill-current">
@@ -101,7 +204,7 @@ const ConnectPage = () => {
         {
             id: 'facebook',
             title: 'facebook',
-            action: () => window.open(settings?.social?.facebook || 'https://facebook.com', '_blank'),
+            action: () => handleLinkClick(connectLinks.facebook?.url, settings?.social?.facebook || 'https://facebook.com'),
             icon: (
                 <div className="w-14 h-14 rounded-full bg-[#1877F2] text-white flex items-center justify-center shadow-sm">
                     <svg viewBox="0 0 24 24" className="w-9 h-9 fill-current">
@@ -113,7 +216,7 @@ const ConnectPage = () => {
         {
             id: 'instagram',
             title: 'instagram',
-            action: () => window.open(settings?.social?.instagram || 'https://instagram.com', '_blank'),
+            action: () => handleLinkClick(connectLinks.instagram?.url, settings?.social?.instagram || 'https://instagram.com'),
             icon: (
                 <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-[#f09433] via-[#dc2743] to-[#bc1888] text-white flex items-center justify-center shadow-sm">
                     <svg viewBox="0 0 24 24" className="w-9 h-9 fill-current">
@@ -125,7 +228,7 @@ const ConnectPage = () => {
         {
             id: 'linkedin',
             title: 'linkdin',
-            action: () => window.open(settings?.social?.linkedin || 'https://linkedin.com', '_blank'),
+            action: () => handleLinkClick(connectLinks.linkedin?.url, settings?.social?.linkedin || 'https://linkedin.com'),
             icon: (
                 <div className="w-14 h-14 rounded-2xl bg-[#0A66C2] text-white flex items-center justify-center font-bold text-3xl shadow-sm">
                     in
@@ -135,7 +238,7 @@ const ConnectPage = () => {
         {
             id: 'twitter',
             title: 'twitter',
-            action: () => window.open(settings?.social?.twitter || 'https://twitter.com', '_blank'),
+            action: () => handleLinkClick(connectLinks.twitter?.url, settings?.social?.twitter || 'https://twitter.com'),
             icon: (
                 <div className="w-14 h-14 rounded-2xl bg-[#1DA1F2] text-white flex items-center justify-center shadow-sm">
                     <svg viewBox="0 0 24 24" className="w-9 h-9 fill-current">
@@ -147,7 +250,7 @@ const ConnectPage = () => {
         {
             id: 'youtube',
             title: 'youtube',
-            action: () => window.open(settings?.social?.youtube || 'https://youtube.com', '_blank'),
+            action: () => handleLinkClick(connectLinks.youtube?.url, settings?.social?.youtube || 'https://youtube.com'),
             icon: (
                 <div className="w-14 h-14 rounded-2xl bg-[#FF0000] text-white flex items-center justify-center shadow-sm">
                     <svg viewBox="0 0 24 24" className="w-9 h-9 fill-current">
@@ -159,7 +262,7 @@ const ConnectPage = () => {
         {
             id: 'google',
             title: 'google',
-            action: () => window.open('https://google.com', '_blank'),
+            action: () => handleLinkClick(connectLinks.google?.url, 'https://google.com'),
             icon: (
                 <div className="w-14 h-14 rounded-full bg-white border border-stone-200 flex items-center justify-center shadow-sm">
                     <svg viewBox="0 0 24 24" className="w-9 h-9">
@@ -173,42 +276,13 @@ const ConnectPage = () => {
         }
     ]
 
-    // Exact rows from user's screenshot
-    const videoLibraryItems = [
-        {
-            id: 'v1',
-            title: 'Patient Success Stories',
-            desc: 'Real experiences & life transformations through astrology and Vastu guidance.',
-            videoUrl: 'https://www.youtube.com'
-        },
-        {
-            id: 'v2',
-            title: 'Joint & Spine Recovery Videos',
-            desc: 'Holistic energetic remedies, posture alignment & Vastu spatial healing.',
-            videoUrl: 'https://www.youtube.com'
-        },
-        {
-            id: 'v3',
-            title: 'Weight Loss Transformations',
-            desc: 'Ayurvedic lifestyle, yogic discipline & planetary metabolism alignment.',
-            videoUrl: 'https://www.youtube.com'
-        },
-        {
-            id: 'v4',
-            title: 'Liver Detox and Ayurveda Videos',
-            desc: 'Panchamahabhuta body cleansing, natural herbal remedies & dietary wisdom.',
-            videoUrl: 'https://www.youtube.com'
-        },
-        {
-            id: 'v5',
-            title: 'Expert Health Education Videos',
-            desc: 'Educational masterclasses bridging astrological cycles, physical health & consciousness.',
-            videoUrl: 'https://www.youtube.com'
-        }
-    ]
+    const handleVideoClick = (item) => {
+        // If a direct URL exists and is not YouTube, open directly or open modal
+        setSelectedVideo(item)
+    }
 
     return (
-        <div className="min-h-screen bg-[#FAF6EC] py-10 md:py-16 px-3 sm:px-6 flex flex-col items-center selection:bg-[var(--gold-500)] selection:text-white">
+        <div className="min-h-screen bg-[#FAF6EC] pt-20 pb-10 md:pb-16 md:pt-26 px-3 sm:px-6 flex flex-col items-center selection:bg-[var(--gold-500)] selection:text-white">
 
             {/* Container Box matching the Flyer layout */}
             <div className="w-full max-w-[650px] bg-[#FAF6ED] border-2 border-[#547345]/30 rounded-3xl p-6 sm:p-10 shadow-xl relative">
@@ -226,7 +300,7 @@ const ConnectPage = () => {
                     </div>
                     <button
                         onClick={handleShare}
-                        className="btn btn-outline text-xs h-9 px-3 flex items-center gap-1.5 border-[#547345]/40 text-[#2f4b23] hover:bg-[#547345]/10"
+                        className="btn btn-outline text-xs h-9 px-3 flex items-center gap-1.5 border-[#547345]/40 text-[#2f4b23] hover:bg-[#547345]/10 cursor-pointer"
                     >
                         <Share2 size={14} />
                         <span>{copied ? 'Link Copied!' : 'Share Page'}</span>
@@ -258,7 +332,7 @@ const ConnectPage = () => {
 
                             <button
                                 onClick={item.action}
-                                className="w-full mt-auto py-1 px-2 rounded-full bg-[#9e1c1c] hover:bg-[#b82323] text-white font-sans font-bold text-[10px] tracking-wider uppercase transition-colors shadow-xs active:scale-95"
+                                className="w-full mt-auto py-1 px-2 rounded-full bg-[#9e1c1c] hover:bg-[#b82323] text-white font-sans font-bold text-[10px] tracking-wider uppercase transition-colors shadow-xs active:scale-95 cursor-pointer"
                             >
                                 CLICK HERE
                             </button>
@@ -299,8 +373,8 @@ const ConnectPage = () => {
 
                                 {/* Red Pill Action Button */}
                                 <button
-                                    onClick={() => setSelectedVideo(item)}
-                                    className="shrink-0 py-1.5 px-4 rounded-full bg-[#9e1c1c] hover:bg-[#b82323] text-white font-sans font-bold text-[10px] sm:text-[11px] tracking-wider uppercase transition-colors shadow-xs active:scale-95"
+                                    onClick={() => handleVideoClick(item)}
+                                    className="shrink-0 py-1.5 px-4 rounded-full bg-[#9e1c1c] hover:bg-[#b82323] text-white font-sans font-bold text-[10px] sm:text-[11px] tracking-wider uppercase transition-colors shadow-xs active:scale-95 cursor-pointer"
                                 >
                                     CLICK HERE
                                 </button>
@@ -318,25 +392,25 @@ const ConnectPage = () => {
 
             </div>
 
-            {/* Video Player Modal */}
+            {/* Video Player / Information Modal */}
             {selectedVideo && (
                 <div
                     className="fixed inset-0 z-[9900] bg-black/70 backdrop-blur-xs flex items-center justify-center p-4"
                     onClick={() => setSelectedVideo(null)}
                 >
                     <div
-                        className="bg-white w-full max-w-lg rounded-2xl p-6 shadow-2xl relative border border-stone-200"
+                        className="bg-white w-full max-w-lg rounded-2xl p-6 shadow-2xl relative border border-stone-200 animate-fade-in"
                         onClick={(e) => e.stopPropagation()}
                     >
                         <button
                             onClick={() => setSelectedVideo(null)}
-                            className="absolute top-4 right-4 w-8 h-8 rounded-full bg-stone-100 hover:bg-stone-200 flex items-center justify-center text-stone-700"
+                            className="absolute top-4 right-4 w-8 h-8 rounded-full bg-stone-100 hover:bg-stone-200 flex items-center justify-center text-stone-700 cursor-pointer"
                         >
                             <X size={18} />
                         </button>
 
                         <div className="flex items-center gap-3 mb-4">
-                            <div className="w-10 h-10 rounded-full bg-[#9e1c1c] text-white flex items-center justify-center shrink-0">
+                            <div className="w-10 h-10 rounded-full bg-[#9e1c1c] text-white flex items-center justify-center shrink-0 shadow-sm">
                                 <Play size={18} fill="white" className="ml-0.5" />
                             </div>
                             <div>
@@ -347,37 +421,102 @@ const ConnectPage = () => {
                             </div>
                         </div>
 
-                        <p className="text-sm text-stone-600 mb-6 leading-relaxed">
-                            {selectedVideo.desc}
-                        </p>
+                        {selectedVideo.desc && (
+                            <p className="text-sm text-stone-600 mb-6 leading-relaxed">
+                                {selectedVideo.desc}
+                            </p>
+                        )}
 
-                        <div className="aspect-video bg-stone-900 rounded-xl flex flex-col items-center justify-center text-white p-4 text-center mb-5 relative overflow-hidden">
-                            <div className="absolute inset-0 bg-gradient-to-tr from-stone-900 via-stone-800 to-amber-950 opacity-90" />
-                            <div className="relative z-10 flex flex-col items-center">
-                                <div className="w-14 h-14 rounded-full bg-red-600 text-white flex items-center justify-center mb-3 shadow-lg hover:scale-110 transition-transform cursor-pointer"
-                                    onClick={() => window.open(settings?.social?.youtube || 'https://youtube.com', '_blank')}
-                                >
-                                    <Play size={24} fill="white" className="ml-1" />
-                                </div>
-                                <p className="text-sm font-medium">Watch Full Playlist on YouTube</p>
-                                <p className="text-xs text-stone-400 mt-1">High-definition guidance episodes & client stories</p>
+                        {/* Video Content / Iframe or Placeholder */}
+                        {selectedVideo.url && (selectedVideo.url.includes('youtube.com') || selectedVideo.url.includes('youtu.be')) ? (
+                            <div className="aspect-video bg-black rounded-xl overflow-hidden mb-5">
+                                <iframe
+                                    src={selectedVideo.url.replace('watch?v=', 'embed/').replace('youtu.be/', 'youtube.com/embed/')}
+                                    title={selectedVideo.title}
+                                    allowFullScreen
+                                    className="w-full h-full border-0"
+                                />
                             </div>
-                        </div>
+                        ) : selectedVideo.thumbnail ? (
+                            <div className="aspect-video bg-stone-900 rounded-xl overflow-hidden mb-5 relative">
+                                <img src={selectedVideo.thumbnail} alt={selectedVideo.title} className="w-full h-full object-cover opacity-80" />
+                                <div className="absolute inset-0 flex items-center justify-center">
+                                    <div
+                                        className="w-14 h-14 rounded-full bg-red-600 text-white flex items-center justify-center shadow-lg hover:scale-110 transition-transform cursor-pointer"
+                                        onClick={() => {
+                                            if (selectedVideo.url) {
+                                                window.open(selectedVideo.url, '_blank')
+                                            } else {
+                                                window.open(connectLinks.youtube?.url || 'https://youtube.com', '_blank')
+                                            }
+                                        }}
+                                    >
+                                        <Play size={24} fill="white" className="ml-1" />
+                                    </div>
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="aspect-video bg-stone-900 rounded-xl flex flex-col items-center justify-center text-white p-4 text-center mb-5 relative overflow-hidden">
+                                <div className="absolute inset-0 bg-gradient-to-tr from-stone-900 via-stone-800 to-amber-950 opacity-90" />
+                                <div className="relative z-10 flex flex-col items-center">
+                                    <div
+                                        className="w-14 h-14 rounded-full bg-red-600 text-white flex items-center justify-center mb-3 shadow-lg hover:scale-110 transition-transform cursor-pointer"
+                                        onClick={() => {
+                                            if (selectedVideo.url) {
+                                                window.open(selectedVideo.url, '_blank')
+                                            } else {
+                                                window.open(connectLinks.youtube?.url || 'https://youtube.com', '_blank')
+                                            }
+                                        }}
+                                    >
+                                        <Play size={24} fill="white" className="ml-1" />
+                                    </div>
+                                    <p className="text-sm font-medium">
+                                        {selectedVideo.url ? 'Watch Video' : 'Official Guidance Episode'}
+                                    </p>
+                                    <p className="text-xs text-stone-400 mt-1 max-w-xs">
+                                        {selectedVideo.url ? 'Click to open video stream' : 'Watch client transformations & guidance on YouTube, or inquire via WhatsApp'}
+                                    </p>
+                                </div>
+                            </div>
+                        )}
 
-                        <div className="flex justify-end gap-3">
-                            <button
-                                onClick={() => setSelectedVideo(null)}
-                                className="btn btn-outline text-xs px-4 py-2"
+                        {/* Action Buttons */}
+                        <div className="flex flex-col sm:flex-row justify-between items-center gap-3 pt-2">
+                            <a
+                                href={`https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(`Hello Anita Ma'am, I would like to inquire about "${selectedVideo.title}".`)}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-xs text-[#25D366] font-semibold flex items-center gap-1.5 hover:underline"
                             >
-                                Close
-                            </button>
-                            <button
-                                onClick={() => window.open(settings?.social?.youtube || 'https://youtube.com', '_blank')}
-                                className="btn btn-primary text-xs px-5 py-2 flex items-center gap-1.5"
-                            >
-                                <span>Watch on YouTube</span>
-                                <ExternalLink size={14} />
-                            </button>
+                                <MessageCircle size={15} /> Inquire on WhatsApp
+                            </a>
+
+                            <div className="flex gap-2">
+                                <button
+                                    onClick={() => setSelectedVideo(null)}
+                                    className="btn btn-outline text-xs px-4 py-2 cursor-pointer"
+                                >
+                                    Close
+                                </button>
+                                {selectedVideo.url ? (
+                                    <button
+                                        onClick={() => window.open(selectedVideo.url, '_blank')}
+                                        className="btn btn-primary text-xs px-5 py-2 flex items-center gap-1.5 cursor-pointer"
+                                    >
+                                        <span>Watch Video</span>
+                                        <ExternalLink size={14} />
+                                    </button>
+                                ) : (
+                                    <button
+                                        onClick={() => window.open(connectLinks.youtube?.url || 'https://youtube.com', '_blank')}
+                                        className="btn btn-primary text-xs px-5 py-2 flex items-center gap-1.5 cursor-pointer"
+                                    >
+                                        <span>Visit YouTube</span>
+                                        <ExternalLink size={14} />
+                                    </button>
+                                )}
+                            </div>
                         </div>
                     </div>
                 </div>

@@ -79,7 +79,7 @@ const Contact = () => {
     {
       id: 'whatsapp',
       name: 'WhatsApp 24/7',
-      href: settings.social.whatsapp || null,
+      href: settings.social?.whatsapp || SITE_CONFIG.social.whatsapp,
       icon: <MessageCircle className="w-5 h-5 text-[#25D366]" />,
       desc: "Fastest response time."
     },

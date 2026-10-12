@@ -42,6 +42,7 @@ const SectionStyleEditor = ({ styleConfig, setStyleConfig, label = "Section Styl
             if (result.success) {
                 const urlField = getImgField('url')
                 updateNestedStyle('bgImage', urlField, result.url)
+                updateStyle('bgType', 'image')
 
                 // Save to Firestore media collection so it's always preserved in Cloudinary Media Library
                 await addDoc(collection(db, 'media'), {
@@ -65,6 +66,7 @@ const SectionStyleEditor = ({ styleConfig, setStyleConfig, label = "Section Styl
     const handleSelectFromLibrary = (url) => {
         const urlField = getImgField('url')
         updateNestedStyle('bgImage', urlField, url)
+        updateStyle('bgType', 'image')
     }
 
     const activeImageUrl = styleConfig.bgImage?.[getImgField('url')] || ''

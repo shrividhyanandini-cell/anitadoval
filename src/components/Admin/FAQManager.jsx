@@ -4,6 +4,7 @@ import { db } from '../../utils/firebase'
 import { Plus, Trash2, CheckCircle2, AlertCircle, Edit, ArrowUpDown } from 'lucide-react'
 import Button from '../UI/Button'
 import Loading from '../UI/Loading'
+import ResponsiveBackgroundManager from './ResponsiveBackgroundManager'
 
 const DEFAULT_CONFIG = {
     sectionEnabled: true,
@@ -11,7 +12,16 @@ const DEFAULT_CONFIG = {
     heading: 'Frequently \nAsked Questions',
     description: 'Find answers to common questions about our consultations, services and process.',
     buttonText: 'Contact Us',
-    buttonUrl: '/contact'
+    buttonUrl: '/contact',
+    background: {
+        url: '',
+        tabletUrl: '',
+        mobileUrl: '',
+        bgSize: 'cover',
+        bgRepeat: 'no-repeat',
+        bgPosition: 'center',
+        bgAttachment: 'scroll'
+    }
 }
 
 const FAQManager = () => {
@@ -84,7 +94,18 @@ const FAQManager = () => {
     }, [])
 
     const handleConfigChange = (field, value) => {
-        setConfig(prev => ({ ...prev, [field]: value }))
+        if (field.includes('.')) {
+            const [parent, child] = field.split('.')
+            setConfig(prev => ({
+                ...prev,
+                [parent]: {
+                    ...(prev[parent] || {}),
+                    [child]: value
+                }
+            }))
+        } else {
+            setConfig(prev => ({ ...prev, [field]: value }))
+        }
     }
 
     const handleSaveConfig = async () => {
@@ -94,6 +115,34 @@ const FAQManager = () => {
             await setDoc(doc(db, 'faqs', 'faq_config'), config, { merge: true })
             // Backwards compatibility mirror
             await setDoc(doc(db, 'services', 'faq_config'), config, { merge: true })
+
+            // Dual sync to global_theme so ThemeCustomizer doesn't override or lose it
+            try {
+                const themeRef = doc(db, 'services', 'global_theme')
+                const themeSnap = await getDoc(themeRef)
+                const currentTheme = themeSnap.exists() ? themeSnap.data() : {}
+                const bg = config.background || {}
+                const updatedTheme = {
+                    ...currentTheme,
+                    faq: {
+                        ...(currentTheme.faq || {}),
+                        bgType: bg.url ? 'image' : (currentTheme.faq?.bgType || 'color'),
+                        bgImage: {
+                            url: bg.url || '',
+                            tabletUrl: bg.tabletUrl || '',
+                            mobileUrl: bg.mobileUrl || '',
+                            size: bg.bgSize || bg.size || 'cover',
+                            position: bg.bgPosition || bg.position || 'center',
+                            repeat: bg.bgRepeat || bg.repeat || 'no-repeat',
+                            attachment: bg.bgAttachment || bg.attachment || 'scroll'
+                        }
+                    }
+                }
+                await setDoc(themeRef, updatedTheme)
+            } catch (syncErr) {
+                console.warn('Sync to global_theme skipped:', syncErr)
+            }
+
             setStatusMessage({ type: 'success', text: 'FAQ section settings saved successfully!' })
             setTimeout(() => setStatusMessage(null), 3000)
         } catch (error) {
@@ -248,6 +297,11 @@ const FAQManager = () => {
                             </Button>
                         </div>
                     </div>
+
+                    <ResponsiveBackgroundManager
+                        config={config.background}
+                        onChange={(field, value) => handleConfigChange(`background.${field}`, value)}
+                    />
                 </div>
 
                 {/* Right: FAQs List & Editor */}

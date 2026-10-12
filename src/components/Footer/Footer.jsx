@@ -122,14 +122,17 @@ const Footer = () => {
                   <a href={`tel:${settings.contact.phone}`} className="hover:text-[var(--gold-500)] transition-colors">{settings.contact.phone}</a>
                 </li>
               )}
-              {settings.social.whatsapp && (
-                <li className={`flex gap-[12px] text-[14px] pt-[4px] ${textClass.includes('white') ? 'text-gray-300' : 'text-[var(--charcoal-500)]'}`}>
-                  <MessageCircle size={16} strokeWidth={1.5} className="text-[#25D366] shrink-0 mt-[2px]" />
-                  <a href={settings.social.whatsapp} target="_blank" rel="noopener noreferrer" className="hover:text-[#25D366] transition-colors leading-relaxed">
-                    Connect on WhatsApp
-                  </a>
-                </li>
-              )}
+              <li className={`flex gap-[12px] text-[14px] pt-[4px] ${textClass.includes('white') ? 'text-gray-300' : 'text-[var(--charcoal-500)]'}`}>
+                <MessageCircle size={16} strokeWidth={1.5} className="text-[#25D366] shrink-0 mt-[2px]" />
+                <a
+                  href={settings.social?.whatsapp || SITE_CONFIG.social.whatsapp}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-[#25D366] transition-colors leading-relaxed"
+                >
+                  Connect on WhatsApp
+                </a>
+              </li>
             </ul>
           </div>
 

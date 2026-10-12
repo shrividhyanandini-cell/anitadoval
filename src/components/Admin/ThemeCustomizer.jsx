@@ -59,7 +59,52 @@ const ThemeCustomizer = () => {
     const handleSave = async () => {
         setSaving(true)
         try {
-            await setDoc(doc(db, 'services', 'global_theme'), themeConfig)
+            const cleanedConfig = { ...themeConfig }
+            Object.keys(cleanedConfig).forEach(key => {
+                const item = cleanedConfig[key]
+                if (item?.bgImage?.url) {
+                    item.bgType = 'image'
+                    item.bgImage.size = item.bgImage.size || 'cover'
+                }
+            })
+
+            // Save to global_theme with merge: true so no other fields are lost
+            await setDoc(doc(db, 'services', 'global_theme'), cleanedConfig, { merge: true })
+
+            // Dual sync to cta_config if cta section has bgImage
+            if (cleanedConfig.cta?.bgImage?.url) {
+                try {
+                    await setDoc(doc(db, 'services', 'cta_config'), {
+                        background: {
+                            url: cleanedConfig.cta.bgImage.url,
+                            tabletUrl: cleanedConfig.cta.bgImage.tabletUrl || '',
+                            mobileUrl: cleanedConfig.cta.bgImage.mobileUrl || '',
+                            bgSize: cleanedConfig.cta.bgImage.size || 'cover',
+                            bgPosition: cleanedConfig.cta.bgImage.position || 'center',
+                            bgRepeat: cleanedConfig.cta.bgImage.repeat || 'no-repeat',
+                            bgAttachment: cleanedConfig.cta.bgImage.attachment || 'scroll'
+                        }
+                    }, { merge: true })
+                } catch (e) { }
+            }
+
+            // Dual sync to faq_config if faq section has bgImage
+            if (cleanedConfig.faq?.bgImage?.url) {
+                try {
+                    const faqBg = {
+                        url: cleanedConfig.faq.bgImage.url,
+                        tabletUrl: cleanedConfig.faq.bgImage.tabletUrl || '',
+                        mobileUrl: cleanedConfig.faq.bgImage.mobileUrl || '',
+                        bgSize: cleanedConfig.faq.bgImage.size || 'cover',
+                        bgPosition: cleanedConfig.faq.bgImage.position || 'center',
+                        bgRepeat: cleanedConfig.faq.bgImage.repeat || 'no-repeat',
+                        bgAttachment: cleanedConfig.faq.bgImage.attachment || 'scroll'
+                    }
+                    await setDoc(doc(db, 'faqs', 'faq_config'), { background: faqBg }, { merge: true })
+                    await setDoc(doc(db, 'services', 'faq_config'), { background: faqBg }, { merge: true })
+                } catch (e) { }
+            }
+
             alert('Global Theme Configuration Saved Successfully!')
         } catch (error) {
             console.error('Error saving global theme:', error)

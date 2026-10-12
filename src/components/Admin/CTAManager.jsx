@@ -4,6 +4,7 @@ import { db } from '../../utils/firebase'
 import { CheckCircle2 } from 'lucide-react'
 import Button from '../UI/Button'
 import Loading from '../UI/Loading'
+import ResponsiveBackgroundManager from './ResponsiveBackgroundManager'
 
 const DEFAULT_CONFIG = {
     sectionEnabled: true,
@@ -11,7 +12,16 @@ const DEFAULT_CONFIG = {
     heading: 'Begin Your Consultation',
     description: 'Connect for personalised guidance in astrology, Vastu and spiritual practices.',
     primaryCta: { enabled: true, text: 'Book a Consultation' },
-    whatsappCta: { enabled: true, text: 'Connect on WhatsApp' }
+    whatsappCta: { enabled: true, text: 'Connect on WhatsApp' },
+    background: {
+        url: '',
+        tabletUrl: '',
+        mobileUrl: '',
+        bgSize: 'cover',
+        bgRepeat: 'no-repeat',
+        bgPosition: 'center',
+        bgAttachment: 'scroll'
+    }
 }
 
 const CTAManager = () => {
@@ -27,6 +37,24 @@ const CTAManager = () => {
                 const snap = await getDoc(docRef)
                 if (snap.exists()) {
                     setConfig({ ...DEFAULT_CONFIG, ...snap.data() })
+                } else {
+                    // Check fallback in global_theme if exists
+                    const themeSnap = await getDoc(doc(db, 'services', 'global_theme'))
+                    if (themeSnap.exists() && themeSnap.data()?.cta) {
+                        const ctaTheme = themeSnap.data().cta
+                        if (ctaTheme.bgImage?.url) {
+                            setConfig(prev => ({
+                                ...prev,
+                                background: {
+                                    ...prev.background,
+                                    url: ctaTheme.bgImage.url,
+                                    tabletUrl: ctaTheme.bgImage.tabletUrl || '',
+                                    mobileUrl: ctaTheme.bgImage.mobileUrl || '',
+                                    bgAttachment: ctaTheme.bgImage.attachment || 'scroll'
+                                }
+                            }))
+                        }
+                    }
                 }
             } catch (err) {
                 console.error("Failed to load CTA configuration", err)
@@ -38,7 +66,18 @@ const CTAManager = () => {
     }, [])
 
     const handleChange = (field, value) => {
-        setConfig(prev => ({ ...prev, [field]: value }))
+        if (field.includes('.')) {
+            const [parent, child] = field.split('.')
+            setConfig(prev => ({
+                ...prev,
+                [parent]: {
+                    ...(prev[parent] || {}),
+                    [child]: value
+                }
+            }))
+        } else {
+            setConfig(prev => ({ ...prev, [field]: value }))
+        }
     }
 
     const handleNestedChange = (parent, field, value) => {
@@ -52,7 +91,36 @@ const CTAManager = () => {
         setSaving(true)
         setStatusMessage(null)
         try {
+            // 1. Save directly to services/cta_config
             await setDoc(doc(db, 'services', 'cta_config'), config)
+
+            // 2. Also sync background to services/global_theme for seamless fallback
+            try {
+                const themeRef = doc(db, 'services', 'global_theme')
+                const themeSnap = await getDoc(themeRef)
+                const currentTheme = themeSnap.exists() ? themeSnap.data() : {}
+                const bg = config.background || {}
+                const updatedTheme = {
+                    ...currentTheme,
+                    cta: {
+                        ...(currentTheme.cta || {}),
+                        bgType: bg.url ? 'image' : (currentTheme.cta?.bgType || 'color'),
+                        bgImage: {
+                            url: bg.url || '',
+                            tabletUrl: bg.tabletUrl || '',
+                            mobileUrl: bg.mobileUrl || '',
+                            size: bg.bgSize || bg.size || 'cover',
+                            position: bg.bgPosition || bg.position || 'center',
+                            repeat: bg.bgRepeat || bg.repeat || 'no-repeat',
+                            attachment: bg.bgAttachment || bg.attachment || 'scroll'
+                        }
+                    }
+                }
+                await setDoc(themeRef, updatedTheme)
+            } catch (syncErr) {
+                console.warn('Sync to global_theme skipped:', syncErr)
+            }
+
             setStatusMessage({ type: 'success', text: 'CTA section updated successfully!' })
             setTimeout(() => setStatusMessage(null), 3000)
         } catch (error) {
@@ -125,6 +193,13 @@ const CTAManager = () => {
                         </div>
                     </div>
                 </div>
+            </div>
+
+            <div className="mt-8">
+                <ResponsiveBackgroundManager
+                    config={config.background}
+                    onChange={(field, value) => handleChange(`background.${field}`, value)}
+                />
             </div>
 
             <div className="fixed bottom-0 left-[280px] right-0 bg-white border-t border-gray-200 p-4 px-8 z-40 flex items-center justify-between shadow-[0_-4px_24px_rgba(0,0,0,0.02)]">

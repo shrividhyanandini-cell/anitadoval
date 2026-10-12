@@ -3,7 +3,7 @@ import { Play, X, ExternalLink, ArrowRight, Youtube } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { collection, doc, getDoc, getDocs } from 'firebase/firestore'
 import { db } from '../../utils/firebase'
-import { WA_NUMBER } from '../../data/siteConfig'
+import { WA_NUMBER, buildWhatsAppUrl } from '../../data/siteConfig'
 
 const DEFAULT_CONFIG = {
     enabled: true,
@@ -19,11 +19,11 @@ const DEFAULT_CONFIG = {
 }
 
 const STATIC_VIDEOS = [
-    { id: 's1', title: 'Jyotish & Life Direction', subtitle: 'Astrological & Spiritual Transformations', description: 'Real client experiences and testimonials detailing life-changing clarity through Janam Kundli readings and planetary remedies.', order: 0 },
-    { id: 's2', title: 'Vastu for Home Harmony', subtitle: 'Spatial Energy Harmonization', description: 'Exploring how non-demolition Vastu alignment and directional energy grids alleviate chronic tension and physical stress.', order: 1 },
-    { id: 's3', title: 'Mantra & Meditation Guide', subtitle: 'Vedic Spiritual Practice', description: 'Guidance on mantra repetition, individual Prakriti, and mindful yogic routines for sustainable vitality.', order: 2 },
-    { id: 's4', title: 'Prashna Kundli Readings', subtitle: 'Horary Astrology Explained', description: 'Understanding how moment-specific charts answer pressing life questions with clarity and precision.', order: 3 },
-    { id: 's5', title: 'Gemstone & Remedy Sessions', subtitle: 'Planetary Remediation', description: 'Comprehensive guides on gemstone selection, mantra vidhan, and elemental remedies based on birth chart analysis.', order: 4 },
+    { id: 'v1', title: 'Patient Success Stories', desc: 'Real experiences & life transformations through astrology and Vastu guidance.', description: 'Real experiences & life transformations through astrology and Vastu guidance.', url: '', youtubeUrl: '', thumbnail: '', thumbnailUrl: '', order: 1 },
+    { id: 'v2', title: 'Joint & Spine Recovery Videos', desc: 'Holistic energetic remedies, posture alignment & Vastu spatial healing.', description: 'Holistic energetic remedies, posture alignment & Vastu spatial healing.', url: '', youtubeUrl: '', thumbnail: '', thumbnailUrl: '', order: 2 },
+    { id: 'v3', title: 'Weight Loss Transformations', desc: 'Ayurvedic lifestyle, yogic discipline & planetary metabolism alignment.', description: 'Ayurvedic lifestyle, yogic discipline & planetary metabolism alignment.', url: '', youtubeUrl: '', thumbnail: '', thumbnailUrl: '', order: 3 },
+    { id: 'v4', title: 'Liver Detox and Ayurveda Videos', desc: 'Panchamahabhuta body cleansing, natural herbal remedies & dietary wisdom.', description: 'Panchamahabhuta body cleansing, natural herbal remedies & dietary wisdom.', url: '', youtubeUrl: '', thumbnail: '', thumbnailUrl: '', order: 4 },
+    { id: 'v5', title: 'Expert Health Education Videos', desc: 'Educational masterclasses bridging astrological cycles, physical health & consciousness.', description: 'Educational masterclasses bridging astrological cycles, physical health & consciousness.', url: '', youtubeUrl: '', thumbnail: '', thumbnailUrl: '', order: 5 },
 ]
 
 const VideoLibrarySection = () => {
@@ -46,7 +46,22 @@ const VideoLibrarySection = () => {
                 const videosSnap = await getDocs(collection(db, 'video_library'))
                 const items = videosSnap.docs
                     .filter(d => d.id !== 'config' && d.data().enabled !== false)
-                    .map(d => ({ id: d.id, ...d.data() }))
+                    .map(d => {
+                        const data = d.data()
+                        const desc = data.desc || data.description || ''
+                        const url = data.url || data.youtubeUrl || ''
+                        const thumbnail = data.thumbnail || data.thumbnailUrl || ''
+                        return {
+                            id: d.id,
+                            ...data,
+                            desc,
+                            description: desc,
+                            url,
+                            youtubeUrl: url,
+                            thumbnail,
+                            thumbnailUrl: thumbnail
+                        }
+                    })
                     .sort((a, b) => (a.order || 0) - (b.order || 0))
 
                 if (items.length > 0) setVideos(items)
@@ -80,7 +95,7 @@ const VideoLibrarySection = () => {
 
     if (config.enabled === false) return null
 
-    const waUrl = `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent("Hello Anita Ma'am, I would like to know more about your video consultations.")}`
+    const waUrl = buildWhatsAppUrl({}, "Video Consultations Inquiry")
 
     return (
         <section

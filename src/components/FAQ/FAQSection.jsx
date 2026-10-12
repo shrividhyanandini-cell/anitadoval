@@ -4,6 +4,7 @@ import { db } from '../../utils/firebase'
 import { Plus, Minus } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { useTheme } from '../../hooks/useTheme'
+import { useResponsiveBackground } from '../../hooks/useResponsiveBackground'
 import SectionMotionOverlay from '../UI/SectionMotionOverlay'
 
 const DEFAULT_CONFIG = {
@@ -12,15 +13,25 @@ const DEFAULT_CONFIG = {
     heading: 'Frequently \nAsked Questions',
     description: 'Find answers to common questions about our consultations, services and process.',
     buttonText: 'Contact Us',
-    buttonUrl: '/contact'
+    buttonUrl: '/contact',
+    background: {
+        url: '',
+        tabletUrl: '',
+        mobileUrl: '',
+        bgSize: 'cover',
+        bgRepeat: 'no-repeat',
+        bgPosition: 'center',
+        bgAttachment: 'scroll'
+    }
 }
 
 const FAQSection = () => {
     const [openId, setOpenId] = useState(null)
-    const { sectionStyle, textClass, overlayElement } = useTheme('faq')
+    const { sectionStyle: themeSectionStyle, textClass, overlayElement } = useTheme('faq')
     const [config, setConfig] = useState(DEFAULT_CONFIG)
     const [faqs, setFaqs] = useState([])
     const [loading, setLoading] = useState(true)
+    const responsiveBgStyle = useResponsiveBackground(config.background)
 
     useEffect(() => {
         const fetchFaqsData = async () => {
@@ -73,9 +84,18 @@ const FAQSection = () => {
 
     const headingLines = config.heading?.split('\\n').map(l => l.trim()).filter(Boolean) || []
 
+    const hasLocalBg = Boolean(responsiveBgStyle?.backgroundImage)
+    const activeSectionStyle = hasLocalBg
+        ? { ...responsiveBgStyle, backgroundSize: responsiveBgStyle.backgroundSize || 'cover' }
+        : { ...themeSectionStyle, backgroundSize: themeSectionStyle?.backgroundSize || 'cover' }
+    const hasAnyBg = Boolean(activeSectionStyle?.backgroundImage)
+
     return (
-        <section className={`section-pad relative bg-[var(--cream-100)] border-y border-[var(--border-warm)] ${textClass}`} style={sectionStyle}>
+        <section className={`section-pad relative border-y border-[var(--border-warm)] ${!hasAnyBg ? 'bg-[var(--cream-100)]' : ''} ${textClass}`} style={activeSectionStyle}>
             {overlayElement}
+            {hasAnyBg && !overlayElement && (
+                <div className={`absolute inset-0 pointer-events-none z-0 ${textClass.includes('white') ? 'bg-black/50' : 'bg-white/60'}`} />
+            )}
             <SectionMotionOverlay type="stars" intensity={0.15} />
             <div className={`container max-w-[1080px] relative z-10`}>
 

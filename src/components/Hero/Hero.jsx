@@ -237,7 +237,7 @@ const Hero = () => {
           </div>
 
           {/* RIGHT: Banner Image & Visual Frame */}
-          <div className="w-full lg:col-span-6 xl:col-span-6 relative mt-4 lg:mt-0 flex justify-center">
+          {/* <div className="w-full lg:col-span-6 xl:col-span-6 relative mt-4 lg:mt-0 flex justify-center">
             <div className="relative w-full max-w-[480px] lg:max-w-[500px] aspect-[4/5] rounded-[20px] overflow-hidden shadow-[0_20px_50px_rgba(45,35,20,0.14)] border border-[#E7DCCB]/70 bg-stone-100">
               <img
                 src={activeSlide.image}
@@ -248,7 +248,7 @@ const Hero = () => {
 
               <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent pointer-events-none" />
 
-              {/* Identity / Highlight Badge */}
+             
               <div className="absolute bottom-5 left-5 right-5 bg-white/95 backdrop-blur-md border border-white/60 p-4 rounded-[14px] shadow-[0_12px_30px_rgba(45,35,20,0.12)] flex items-center gap-3.5 z-20">
                 <div className="w-11 h-11 rounded-full bg-[var(--gold-50)] text-[var(--gold-600)] flex items-center justify-center shrink-0 border border-[var(--gold-200)] shadow-xs">
                   <ShieldCheck size={22} strokeWidth={1.6} />
@@ -263,7 +263,7 @@ const Hero = () => {
                 </div>
               </div>
             </div>
-          </div>
+          </div> */}
 
         </div>
       </div>

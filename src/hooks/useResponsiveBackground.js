@@ -41,9 +41,9 @@ export const useResponsiveBackground = (bgConfig) => {
 
     return {
         backgroundImage: `url(${activeUrl})`,
-        backgroundSize: activeSize,
-        backgroundPosition: activePosition,
-        backgroundRepeat: activeRepeat,
-        backgroundAttachment: activeAttachment
+        backgroundSize: activeSize || 'cover',
+        backgroundPosition: activePosition || 'center',
+        backgroundRepeat: activeRepeat || 'no-repeat',
+        backgroundAttachment: activeAttachment || 'scroll'
     };
 };

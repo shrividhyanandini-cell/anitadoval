@@ -27,38 +27,41 @@ export const getSectionStyle = (styleConfig, windowWidth = 1200) => {
 
     const styles = {}
 
-    if (styleConfig.bgType === 'color') {
-        styles.backgroundColor = styleConfig.bgColor || '#ffffff'
-    } else if (styleConfig.bgType === 'gradient') {
-        styles.background = `linear-gradient(${styleConfig.gradientColors?.direction || '180deg'}, ${styleConfig.gradientColors?.start || '#ffffff'}, ${styleConfig.gradientColors?.end || '#ffffff'})`
-    } else if (styleConfig.bgType === 'image' && styleConfig.bgImage) {
-        let activeUrl = styleConfig.bgImage.url;
-        let activeSize = styleConfig.bgImage.size || 'cover';
-        let activePosition = styleConfig.bgImage.position || 'center';
-        let activeRepeat = styleConfig.bgImage.repeat || 'no-repeat';
-        let activeAttachment = styleConfig.bgImage.attachment || 'scroll';
+    const hasImgUrl = Boolean(styleConfig.bgImage?.url || styleConfig.bgImage?.mobileUrl || styleConfig.bgImage?.tabletUrl)
+    const isImageMode = styleConfig.bgType === 'image' || hasImgUrl
+
+    if (isImageMode && hasImgUrl) {
+        let activeUrl = styleConfig.bgImage.url || '';
+        let activeSize = styleConfig.bgImage.size || styleConfig.bgImage.bgSize || 'cover';
+        let activePosition = styleConfig.bgImage.position || styleConfig.bgImage.bgPosition || 'center';
+        let activeRepeat = styleConfig.bgImage.repeat || styleConfig.bgImage.bgRepeat || 'no-repeat';
+        let activeAttachment = styleConfig.bgImage.attachment || styleConfig.bgImage.bgAttachment || 'scroll';
 
         if (windowWidth <= 768 && styleConfig.bgImage.mobileUrl) {
             activeUrl = styleConfig.bgImage.mobileUrl;
-            activeSize = styleConfig.bgImage.mobileSize || 'cover';
-            activePosition = styleConfig.bgImage.mobilePosition || 'center';
-            activeRepeat = styleConfig.bgImage.mobileRepeat || 'no-repeat';
-            activeAttachment = styleConfig.bgImage.mobileAttachment || activeAttachment;
+            activeSize = styleConfig.bgImage.mobileSize || styleConfig.bgImage.mobileBgSize || 'cover';
+            activePosition = styleConfig.bgImage.mobilePosition || styleConfig.bgImage.mobileBgPosition || 'center';
+            activeRepeat = styleConfig.bgImage.mobileRepeat || styleConfig.bgImage.mobileBgRepeat || 'no-repeat';
+            activeAttachment = styleConfig.bgImage.mobileAttachment || styleConfig.bgImage.mobileBgAttachment || activeAttachment;
         } else if (windowWidth <= 1024 && styleConfig.bgImage.tabletUrl) {
             activeUrl = styleConfig.bgImage.tabletUrl;
-            activeSize = styleConfig.bgImage.tabletSize || 'cover';
-            activePosition = styleConfig.bgImage.tabletPosition || 'center';
-            activeRepeat = styleConfig.bgImage.tabletRepeat || 'no-repeat';
-            activeAttachment = styleConfig.bgImage.tabletAttachment || activeAttachment;
+            activeSize = styleConfig.bgImage.tabletSize || styleConfig.bgImage.tabletBgSize || 'cover';
+            activePosition = styleConfig.bgImage.tabletPosition || styleConfig.bgImage.tabletBgPosition || 'center';
+            activeRepeat = styleConfig.bgImage.tabletRepeat || styleConfig.bgImage.tabletBgRepeat || 'no-repeat';
+            activeAttachment = styleConfig.bgImage.tabletAttachment || styleConfig.bgImage.tabletBgAttachment || activeAttachment;
         }
 
         if (activeUrl) {
             styles.backgroundImage = `url(${activeUrl})`
-            styles.backgroundSize = activeSize
-            styles.backgroundPosition = activePosition
-            styles.backgroundRepeat = activeRepeat
-            styles.backgroundAttachment = activeAttachment
+            styles.backgroundSize = activeSize || 'cover'
+            styles.backgroundPosition = activePosition || 'center'
+            styles.backgroundRepeat = activeRepeat || 'no-repeat'
+            styles.backgroundAttachment = activeAttachment || 'scroll'
         }
+    } else if (styleConfig.bgType === 'gradient') {
+        styles.background = `linear-gradient(${styleConfig.gradientColors?.direction || '180deg'}, ${styleConfig.gradientColors?.start || '#ffffff'}, ${styleConfig.gradientColors?.end || '#ffffff'})`
+    } else if (styleConfig.bgType === 'color' || styleConfig.bgColor) {
+        styles.backgroundColor = styleConfig.bgColor || '#ffffff'
     }
 
     return styles

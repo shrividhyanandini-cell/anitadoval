@@ -5,6 +5,7 @@ import { SITE_CONFIG } from '../../data/siteConfig'
 import { usePopup } from '../../context/PopupContext'
 import { MessageCircle, ArrowRight } from 'lucide-react'
 import { useTheme } from '../../hooks/useTheme'
+import { useResponsiveBackground } from '../../hooks/useResponsiveBackground'
 import SectionMotionOverlay from '../UI/SectionMotionOverlay'
 
 const DEFAULT_CONFIG = {
@@ -13,13 +14,23 @@ const DEFAULT_CONFIG = {
     heading: 'Begin Your Consultation',
     description: 'Connect for personalised guidance in astrology, Vastu and spiritual practices.',
     primaryCta: { enabled: true, text: 'Book a Consultation' },
-    whatsappCta: { enabled: true, text: 'Connect on WhatsApp' }
+    whatsappCta: { enabled: true, text: 'Connect on WhatsApp' },
+    background: {
+        url: '',
+        tabletUrl: '',
+        mobileUrl: '',
+        bgSize: 'cover',
+        bgRepeat: 'no-repeat',
+        bgPosition: 'center',
+        bgAttachment: 'scroll'
+    }
 }
 
 const CTASection = () => {
     const { openPopup } = usePopup()
-    const { sectionStyle, textClass, overlayElement } = useTheme('cta')
+    const { sectionStyle: themeSectionStyle, textClass, overlayElement } = useTheme('cta')
     const [config, setConfig] = useState(DEFAULT_CONFIG)
+    const responsiveBgStyle = useResponsiveBackground(config.background)
 
     useEffect(() => {
         const fetchConfig = async () => {
@@ -36,11 +47,18 @@ const CTASection = () => {
 
     if (config.sectionEnabled === false) return null;
 
+    const hasLocalBg = Boolean(responsiveBgStyle?.backgroundImage)
+    const activeSectionStyle = hasLocalBg
+        ? { ...responsiveBgStyle, backgroundSize: responsiveBgStyle.backgroundSize || 'cover' }
+        : { ...themeSectionStyle, backgroundSize: themeSectionStyle.backgroundSize || 'cover' }
+    const hasAnyBg = Boolean(activeSectionStyle?.backgroundImage)
+
     return (
-        <section className={`relative overflow-hidden min-h-[300px] md:min-h-[320px] flex items-center justify-center p-8 ${textClass}`} style={sectionStyle}>
+        <section className={`relative overflow-hidden min-h-[300px] md:min-h-[320px] flex items-center justify-center p-8 ${textClass}`} style={activeSectionStyle}>
             {overlayElement && overlayElement}
+            {hasAnyBg && <div className="absolute inset-0 z-0 pointer-events-none" />}
             <SectionMotionOverlay type="spiritual-glow" intensity={0.1} />
-            {!sectionStyle.backgroundImage && !overlayElement && (
+            {!hasAnyBg && !overlayElement && (
                 <div
                     className="absolute inset-0"
                     style={{
