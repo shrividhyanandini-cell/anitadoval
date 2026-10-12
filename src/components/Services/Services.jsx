@@ -7,7 +7,7 @@ import Loading from '../UI/Loading'
 const Services = () => {
   const { isHindi } = useLanguage()
   const { documents: services, loading } = useFirestore('services')
-  const validServices = services.filter(s => s.type !== 'guide' && !s.id.includes('_config'))
+  const validServices = services.filter(s => s.type !== 'guide' && !s.id.includes('_config') && s.id !== 'global_theme' && s.id !== 'cta_config' && s.id !== 'faq_config' && Boolean(s.title && s.title.trim()))
 
   // Default services agar Firebase me koi data na ho
   const defaultServices = [

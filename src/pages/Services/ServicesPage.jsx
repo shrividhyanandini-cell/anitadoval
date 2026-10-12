@@ -98,7 +98,7 @@ const ServicesPage = () => {
 
     // Filter out config documents, ensure enabled and not archived
     const filteredServices = allServices
-        .filter(s => !s.id.includes('_config') && s.enabled !== false && s.status !== 'archived' && s.type !== 'guide')
+        .filter(s => !s.id.includes('_config') && s.id !== 'global_theme' && s.id !== 'cta_config' && s.id !== 'faq_config' && s.enabled !== false && s.status !== 'archived' && s.type !== 'guide' && Boolean(s.title && s.title.trim()))
         .sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0))
 
     const displayServices = filteredServices.length > 0 ? filteredServices : FALLBACK_SERVICES

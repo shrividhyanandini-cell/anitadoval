@@ -116,10 +116,15 @@ const FAQManager = () => {
             // Backwards compatibility mirror
             await setDoc(doc(db, 'services', 'faq_config'), config, { merge: true })
 
-            // Dual sync to global_theme so ThemeCustomizer doesn't override or lose it
+            // Dual sync to settings/global_theme so ThemeCustomizer doesn't override or lose it
             try {
-                const themeRef = doc(db, 'services', 'global_theme')
-                const themeSnap = await getDoc(themeRef)
+                let themeRef = doc(db, 'settings', 'global_theme')
+                let themeSnap = await getDoc(themeRef)
+                if (!themeSnap.exists()) {
+                    themeRef = doc(db, 'services', 'global_theme')
+                    themeSnap = await getDoc(themeRef)
+                    themeRef = doc(db, 'settings', 'global_theme')
+                }
                 const currentTheme = themeSnap.exists() ? themeSnap.data() : {}
                 const bg = config.background || {}
                 const updatedTheme = {
@@ -138,7 +143,7 @@ const FAQManager = () => {
                         }
                     }
                 }
-                await setDoc(themeRef, updatedTheme)
+                await setDoc(doc(db, 'settings', 'global_theme'), updatedTheme, { merge: true })
             } catch (syncErr) {
                 console.warn('Sync to global_theme skipped:', syncErr)
             }

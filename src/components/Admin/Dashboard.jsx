@@ -225,7 +225,7 @@ const DashboardContent = () => {
         },
         {
             label: isHindi ? 'सेवाएं' : 'Active Services',
-            value: services.filter(s => s.id !== 'hero_config' && s.id !== 'about_config' && s.id !== 'philosophy_config').length || 5,
+            value: services.filter(s => !s.id.includes('_config') && s.id !== 'global_theme' && s.type !== 'guide' && Boolean(s.title && s.title.trim())).length || 5,
             icon: Users,
             bgColor: 'bg-green-50',
             textColor: 'text-green-600'

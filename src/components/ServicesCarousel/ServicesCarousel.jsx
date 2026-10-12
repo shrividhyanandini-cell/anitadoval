@@ -113,9 +113,10 @@ const ServicesCarousel = () => {
 
                 let fetchedServices = []
                 querySnapshot.forEach((docSnap) => {
-                    if (!docSnap.id.includes('_config')) {
+                    const id = docSnap.id
+                    if (!id.includes('_config') && id !== 'global_theme' && id !== 'cta_config' && id !== 'faq_config') {
                         const data = docSnap.data()
-                        if (data.type !== 'guide' && data.enabled !== false && data.status !== 'archived') {
+                        if (data.type !== 'guide' && data.enabled !== false && data.status !== 'archived' && Boolean(data.title && data.title.trim())) {
                             fetchedServices.push({ id: docSnap.id, ...data })
                         }
                     }

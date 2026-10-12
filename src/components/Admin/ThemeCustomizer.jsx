@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { doc, getDoc, setDoc } from 'firebase/firestore'
+import { doc, getDoc, setDoc, deleteDoc } from 'firebase/firestore'
 import { db } from '../../utils/firebase'
 import Button from '../UI/Button'
 import Loading from '../UI/Loading'
@@ -32,8 +32,11 @@ const ThemeCustomizer = () => {
     useEffect(() => {
         const fetchTheme = async () => {
             try {
-                const docRef = doc(db, 'services', 'global_theme')
-                const snap = await getDoc(docRef)
+                // Try clean settings/global_theme first, fallback to legacy services/global_theme
+                let snap = await getDoc(doc(db, 'settings', 'global_theme'))
+                if (!snap.exists()) {
+                    snap = await getDoc(doc(db, 'services', 'global_theme'))
+                }
 
                 let data = snap.exists() ? snap.data() : {}
 
@@ -68,8 +71,15 @@ const ThemeCustomizer = () => {
                 }
             })
 
-            // Save to global_theme with merge: true so no other fields are lost
-            await setDoc(doc(db, 'services', 'global_theme'), cleanedConfig, { merge: true })
+            // Save to settings/global_theme (dedicated settings collection, isolated from services)
+            await setDoc(doc(db, 'settings', 'global_theme'), cleanedConfig, { merge: true })
+
+            // Clean up legacy services/global_theme if it exists so it never appears in services list
+            try {
+                await deleteDoc(doc(db, 'services', 'global_theme'))
+            } catch (delErr) {
+                // Ignore if not present
+            }
 
             // Dual sync to cta_config if cta section has bgImage
             if (cleanedConfig.cta?.bgImage?.url) {

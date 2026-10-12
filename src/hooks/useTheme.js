@@ -17,8 +17,11 @@ export const useTheme = (sectionId) => {
     useEffect(() => {
         const fetchTheme = async () => {
             try {
-                const docRef = doc(db, 'services', 'global_theme')
-                const snap = await getDoc(docRef)
+                // Check settings/global_theme first (clean dedicated location), then fallback to services/global_theme (legacy)
+                let snap = await getDoc(doc(db, 'settings', 'global_theme'))
+                if (!snap.exists()) {
+                    snap = await getDoc(doc(db, 'services', 'global_theme'))
+                }
 
                 if (snap.exists()) {
                     const fullTheme = snap.data()

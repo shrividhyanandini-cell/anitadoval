@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { useLanguage } from '../../context/LanguageContext'
 import { useFirestore } from '../../hooks/useFirestore'
 import { uploadToCloudinary } from '../../utils/cloudinary'
-import { doc, getDoc, setDoc } from 'firebase/firestore'
+import { doc, getDoc, setDoc, deleteDoc } from 'firebase/firestore'
 import { db } from '../../utils/firebase'
 import { Plus, Edit, Trash2, Save, X, Star, Home, Hash, Hand, Heart, Clock, Users, Award, Image as ImageIcon, CheckCircle, GripVertical } from 'lucide-react'
 import Button from '../UI/Button'
@@ -25,6 +25,11 @@ const DEFAULT_SECTION_CONFIG = {
     bgOverlay: 'Light',   // Light, Medium, Strong
     celestialDecoration: true,
     sectionEnabled: true
+}
+
+export const isConfigDoc = (id) => {
+    if (!id) return true
+    return id.includes('_config') || id === 'global_theme' || id === 'globalTheme' || id === 'theme' || id.endsWith('_theme') || id === 'config'
 }
 
 const ServicesManager = () => {
@@ -56,7 +61,9 @@ const ServicesManager = () => {
     })
     const [uploadingServiceImg, setUploadingServiceImg] = useState(false)
 
-    const servicesList = allServices.filter(s => !s.id.includes('_config') && s.type !== 'guide').sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0))
+    const servicesList = allServices
+        .filter(s => !isConfigDoc(s.id) && s.type !== 'guide' && Boolean(s.title && s.title.trim()))
+        .sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0))
 
     const icons = [
         { value: 'star', label: 'Star / Astrology', icon: Star },
@@ -70,18 +77,31 @@ const ServicesManager = () => {
     ]
 
     useEffect(() => {
-        const fetchConfig = async () => {
+        const fetchConfigAndMigrate = async () => {
             try {
                 const docRef = doc(db, 'services', 'services_config')
                 const snap = await getDoc(docRef)
                 if (snap.exists()) {
                     setSectionConfig({ ...DEFAULT_SECTION_CONFIG, ...snap.data() })
                 }
+
+                // Check if legacy services/global_theme is still sitting in services collection
+                const legacyThemeRef = doc(db, 'services', 'global_theme')
+                const legacySnap = await getDoc(legacyThemeRef)
+                if (legacySnap.exists()) {
+                    const legacyData = legacySnap.data()
+                    const newThemeRef = doc(db, 'settings', 'global_theme')
+                    const newSnap = await getDoc(newThemeRef)
+                    if (!newSnap.exists()) {
+                        await setDoc(newThemeRef, legacyData, { merge: true })
+                    }
+                    await deleteDoc(legacyThemeRef)
+                }
             } catch (err) {
-                console.error("Failed to load services config", err)
+                console.error("Failed to load services config or migrate legacy theme", err)
             }
         }
-        fetchConfig()
+        fetchConfigAndMigrate()
     }, [])
 
     const handleSaveSectionConfig = async () => {
@@ -214,6 +234,10 @@ const ServicesManager = () => {
     }
 
     const handleDelete = async (serviceId) => {
+        if (isConfigDoc(serviceId)) {
+            alert('Cannot delete system configuration documents.')
+            return
+        }
         if (window.confirm('Are you sure you want to delete this service?')) {
             await deleteDocument(serviceId)
         }
